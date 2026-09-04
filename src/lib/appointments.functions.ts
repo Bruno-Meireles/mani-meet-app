@@ -162,7 +162,7 @@ export const updateAppointment = createServerFn({ method: "POST" })
     const { id, ...updates } = data;
     const updateData = Object.fromEntries(
       Object.entries(updates).filter(([, v]) => v !== undefined),
-    ) as Record<string, unknown>;
+    ) as unknown as Database['public']['Tables']['appointments']['Update'];
 
     const { data: appointment, error } = await context.supabase
       .from("appointments")
