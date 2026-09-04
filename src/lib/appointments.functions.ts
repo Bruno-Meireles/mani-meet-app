@@ -5,7 +5,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   createAppointmentSchema,
   updateAppointmentSchema,
-  appointmentStatusSchema,
 } from "./appointments.schemas";
 import { generateTimeSlots } from "./appointments.utils";
 import type { Service, Appointment } from "./appointments.schemas";
@@ -26,6 +25,17 @@ function createPublicClient() {
       },
     },
   });
+}
+
+async function isAdmin(supabase: ReturnType<typeof createPublicClient>, userId: string) {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return !!data;
 }
 
 export const listServices = createServerFn({ method: "GET" }).handler(async () => {
@@ -55,17 +65,18 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
 
     const { data: booked, error: bookedError } = await supabase
       .from("appointments")
-      .select("appointment_time, duration_minutes")
+      .select("appointment_time, services(duration_minutes)")
       .eq("appointment_date", data.date)
       .in("status", ["scheduled", "confirmed"]);
 
     if (bookedError) throw new Error(bookedError.message);
 
-    const slots = generateTimeSlots(
-      data.date,
-      service.duration_minutes,
-      (booked ?? []) as { appointment_time: string; duration_minutes: number }[],
-    );
+    const bookedSlots = (booked ?? []).map((b) => ({
+      appointment_time: b.appointment_time,
+      duration_minutes: (b.services as unknown as { duration_minutes: number }).duration_minutes,
+    }));
+
+    const slots = generateTimeSlots(data.date, service.duration_minutes, bookedSlots);
 
     return slots;
   });
@@ -85,17 +96,18 @@ export const createAppointment = createServerFn({ method: "POST" })
 
     const { data: booked, error: bookedError } = await supabase
       .from("appointments")
-      .select("appointment_time, duration_minutes")
+      .select("appointment_time, services(duration_minutes)")
       .eq("appointment_date", data.appointment_date)
       .in("status", ["scheduled", "confirmed"]);
 
     if (bookedError) throw new Error(bookedError.message);
 
-    const slots = generateTimeSlots(
-      data.appointment_date,
-      service.duration_minutes,
-      (booked ?? []) as { appointment_time: string; duration_minutes: number }[],
-    );
+    const bookedSlots = (booked ?? []).map((b) => ({
+      appointment_time: b.appointment_time,
+      duration_minutes: (b.services as unknown as { duration_minutes: number }).duration_minutes,
+    }));
+
+    const slots = generateTimeSlots(data.appointment_date, service.duration_minutes, bookedSlots);
 
     if (!slots.includes(data.appointment_time)) {
       throw new Error("Horário não está mais disponível");
@@ -123,11 +135,9 @@ export const listAppointments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { from: string; to: string }) => input)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!(await isAdmin(context.supabase, context.userId))) {
+      throw new Error("Forbidden");
+    }
 
     const { data: appointments, error } = await context.supabase
       .from("appointments")
@@ -145,16 +155,18 @@ export const updateAppointment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => updateAppointmentSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!(await isAdmin(context.supabase, context.userId))) {
+      throw new Error("Forbidden");
+    }
 
     const { id, ...updates } = data;
+    const updateData = Object.fromEntries(
+      Object.entries(updates).filter(([, v]) => v !== undefined),
+    ) as Partial<typeof updates>;
+
     const { data: appointment, error } = await context.supabase
       .from("appointments")
-      .update(updates)
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
@@ -167,11 +179,9 @@ export const deleteAppointment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!(await isAdmin(context.supabase, context.userId))) {
+      throw new Error("Forbidden");
+    }
 
     const { error } = await context.supabase.from("appointments").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
