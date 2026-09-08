@@ -190,7 +190,7 @@ function AdminPage() {
                             <p className="font-medium">{appointment.client_name}</p>
                             <p className="text-sm text-muted-foreground">
                               {formatTime(appointment.appointment_time)} — {" "}
-                              {(appointment.services as unknown as { name: string }).name}
+                              {((appointment as unknown as { services: { name: string } }).services).name}
                             </p>
                             <p className="text-xs text-muted-foreground">{appointment.client_phone}</p>
                           </div>
