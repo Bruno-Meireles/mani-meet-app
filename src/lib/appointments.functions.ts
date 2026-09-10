@@ -123,6 +123,21 @@ export const createAppointment = createServerFn({ method: "POST" })
       notes: data.notes || null,
     };
 
+    // Debug: try raw fetch with apikey only
+    const url = process.env['SUPABASE_URL']!;
+    const key = process.env['SUPABASE_PUBLISHABLE_KEY']!;
+    const rawRes = await fetch(`${url}/rest/v1/appointments`, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(insertPayload),
+    });
+    const rawBody = await rawRes.text();
+    console.error("raw insert response:", rawRes.status, rawBody.slice(0, 500));
+
     const { data: appointment, error } = await supabase
       .from("appointments")
       .insert(insertPayload)
