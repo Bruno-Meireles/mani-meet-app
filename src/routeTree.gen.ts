@@ -15,7 +15,6 @@ import { Route as AgendarRouteImport } from './routes/agendar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as ApiSeedAdminRouteImport } from './routes/api/seed-admin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,11 +45,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiSeedAdminRoute = ApiSeedAdminRouteImport.update({
-  id: '/api/seed-admin',
-  path: '/api/seed-admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,7 +52,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/api/seed-admin': typeof ApiSeedAdminRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -66,7 +59,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/api/seed-admin': typeof ApiSeedAdminRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,14 +68,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/sobre': typeof SobreRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/api/seed-admin': typeof ApiSeedAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    '/' | '/agendar' | '/login' | '/sobre' | '/admin' | '/api/seed-admin'
+  fullPaths: '/' | '/agendar' | '/login' | '/sobre' | '/admin'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agendar' | '/login' | '/sobre' | '/admin' | '/api/seed-admin'
+  to: '/' | '/agendar' | '/login' | '/sobre' | '/admin'
   id:
     | '__root__'
     | '/'
@@ -92,7 +82,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/sobre'
     | '/_authenticated/admin'
-    | '/api/seed-admin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -101,7 +90,6 @@ export interface RootRouteChildren {
   AgendarRoute: typeof AgendarRoute
   LoginRoute: typeof LoginRoute
   SobreRoute: typeof SobreRoute
-  ApiSeedAdminRoute: typeof ApiSeedAdminRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -148,13 +136,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/seed-admin': {
-      id: '/api/seed-admin'
-      path: '/api/seed-admin'
-      fullPath: '/api/seed-admin'
-      preLoaderRoute: typeof ApiSeedAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -175,7 +156,6 @@ const rootRouteChildren: RootRouteChildren = {
   AgendarRoute: AgendarRoute,
   LoginRoute: LoginRoute,
   SobreRoute: SobreRoute,
-  ApiSeedAdminRoute: ApiSeedAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
