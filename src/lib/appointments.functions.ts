@@ -113,21 +113,26 @@ export const createAppointment = createServerFn({ method: "POST" })
       throw new Error("Horário não está mais disponível");
     }
 
+    const insertPayload = {
+      client_name: data.client_name,
+      client_phone: data.client_phone,
+      client_email: data.client_email || null,
+      service_id: data.service_id,
+      appointment_date: data.appointment_date,
+      appointment_time: data.appointment_time,
+      notes: data.notes || null,
+    };
+
     const { data: appointment, error } = await supabase
       .from("appointments")
-      .insert({
-        client_name: data.client_name,
-        client_phone: data.client_phone,
-        client_email: data.client_email || null,
-        service_id: data.service_id,
-        appointment_date: data.appointment_date,
-        appointment_time: data.appointment_time,
-        notes: data.notes || null,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("appointments insert error:", error.code, error.message, JSON.stringify(insertPayload));
+      throw new Error(error.message);
+    }
     return appointment as Appointment;
   });
 
