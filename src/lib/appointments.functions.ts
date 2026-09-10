@@ -126,6 +126,7 @@ export const createAppointment = createServerFn({ method: "POST" })
     // Debug: try raw fetch with apikey only
     const url = process.env['SUPABASE_URL']!;
     const key = process.env['SUPABASE_PUBLISHABLE_KEY']!;
+    console.error("debug env:", url, key.slice(0, 15));
     const rawRes = await fetch(`${url}/rest/v1/appointments`, {
       method: "POST",
       headers: {
