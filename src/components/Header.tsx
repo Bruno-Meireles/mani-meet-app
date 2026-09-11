@@ -31,6 +31,12 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <Link
+            to="/login"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Login
+          </Link>
           <Button asChild variant="default" size="sm" className="rounded-full">
             <Link to="/agendar">Agendar horário</Link>
           </Button>
@@ -58,6 +64,13 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+          <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Login
+            </Link>
             <Button asChild className="w-full rounded-full" onClick={() => setOpen(false)}>
               <Link to="/agendar">Agendar horário</Link>
             </Button>
