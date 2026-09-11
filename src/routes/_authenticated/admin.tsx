@@ -141,6 +141,13 @@ function AdminPage() {
 
           {isLoading ? (
             <p className="text-muted-foreground">Carregando agendamentos...</p>
+          ) : error ? (
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <p className="font-medium">Não foi possível carregar os agendamentos.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Esta conta não tem permissão de administradora. Saia e entre com a conta autorizada.
+              </p>
+            </div>
           ) : (
             <>
               <div className="mb-8 grid grid-cols-7 gap-2">
