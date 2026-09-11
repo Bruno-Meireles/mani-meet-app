@@ -67,7 +67,7 @@ function AdminPage() {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
 
-  const { data: appointments = [], isLoading } = useQuery({
+  const { data: appointments = [], isLoading, error } = useQuery({
     queryKey: ["appointments", format(weekStart, "yyyy-MM-dd"), format(weekEnd, "yyyy-MM-dd")],
     queryFn: () =>
       listAppointmentsFn({
@@ -141,6 +141,13 @@ function AdminPage() {
 
           {isLoading ? (
             <p className="text-muted-foreground">Carregando agendamentos...</p>
+          ) : error ? (
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <p className="font-medium">Não foi possível carregar os agendamentos.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Esta conta não tem permissão de administradora. Saia e entre com a conta autorizada.
+              </p>
+            </div>
           ) : (
             <>
               <div className="mb-8 grid grid-cols-7 gap-2">
