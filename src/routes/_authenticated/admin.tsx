@@ -114,26 +114,26 @@ function AdminPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <h1 className="font-serif text-xl font-semibold tracking-tight">Painel administrativo</h1>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+        <div className="container mx-auto grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 md:px-6">
+          <h1 className="min-w-0 truncate font-serif text-lg font-semibold sm:text-xl">Painel administrativo</h1>
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="shrink-0 gap-2">
             <LogOut className="h-4 w-4" />
             Sair
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-8">
+      <main className="min-w-0 flex-1 px-3 py-5 sm:px-4 sm:py-8">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-serif text-2xl font-semibold">
+          <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:mb-6">
+            <h2 className="min-w-0 font-serif text-xl font-semibold sm:text-2xl">
               {format(weekStart, "dd")} a {format(weekEnd, "dd 'de' MMMM", { locale: ptBR })}
             </h2>
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => setCurrentDate(subWeeks(currentDate, 1))}>
+            <div className="flex shrink-0 gap-1.5 sm:gap-2">
+              <Button aria-label="Semana anterior" variant="outline" size="icon" onClick={() => setCurrentDate(subWeeks(currentDate, 1))}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" onClick={() => setCurrentDate(addWeeks(currentDate, 1))}>
+              <Button aria-label="Próxima semana" variant="outline" size="icon" onClick={() => setCurrentDate(addWeeks(currentDate, 1))}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -150,38 +150,42 @@ function AdminPage() {
             </div>
           ) : (
             <>
-              <div className="mb-8 grid grid-cols-7 gap-2">
+              <div className="mb-6 grid grid-cols-7 gap-1 sm:mb-8 sm:gap-2">
                 {days.map((day) => {
                   const iso = format(day, "yyyy-MM-dd");
                   const dayAppointments = appointments.filter((a) => a.appointment_date === iso);
                   const isSelected = selectedDate && format(selectedDate, "yyyy-MM-dd") === iso;
                   return (
-                    <button
+                    <Button
                       key={iso}
+                      type="button"
+                      variant="outline"
                       onClick={() => setSelectedDate(day)}
-                      className={`rounded-xl border p-3 text-left transition-colors ${
+                      aria-label={`${format(day, "EEEE, dd 'de' MMMM", { locale: ptBR })}${dayAppointments.length ? `, ${dayAppointments.length} agendamento${dayAppointments.length > 1 ? "s" : ""}` : ""}`}
+                      className={`h-auto min-w-0 flex-col items-stretch gap-0 overflow-hidden px-1 py-2 text-left shadow-none sm:rounded-lg sm:p-3 ${
                         isSelected
                           ? "border-primary bg-primary/5"
-                          : "border-border bg-card hover:bg-accent"
+                          : "border-border bg-card"
                       }`}
                     >
-                      <p className="text-xs font-medium uppercase text-muted-foreground">
-                        {format(day, "EEE", { locale: ptBR })}
+                      <p className="truncate text-[10px] font-medium uppercase text-muted-foreground sm:text-xs">
+                        <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
+                        <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
                       </p>
-                      <p className="mt-1 font-serif text-xl font-semibold">{format(day, "dd")}</p>
+                      <p className="mt-0.5 font-serif text-base font-semibold sm:mt-1 sm:text-xl">{format(day, "dd")}</p>
                       {dayAppointments.length > 0 && (
-                        <Badge variant="secondary" className="mt-2">
+                        <Badge variant="secondary" className="mt-1 h-4 min-w-4 self-start px-1 text-[10px] sm:mt-2 sm:h-auto sm:px-2.5 sm:text-xs">
                           {dayAppointments.length}
                         </Badge>
                       )}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
 
               {selectedDate && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <h3 className="mb-4 font-serif text-xl font-semibold">
+                <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6">
+                  <h3 className="mb-4 font-serif text-lg font-semibold capitalize sm:text-xl">
                     {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                   </h3>
                   {selectedAppointments.length === 0 ? (
@@ -193,15 +197,15 @@ function AdminPage() {
                           key={appointment.id}
                           className="flex flex-col gap-4 rounded-xl border border-border bg-background p-4 md:flex-row md:items-center md:justify-between"
                         >
-                          <div>
-                            <p className="font-medium">{appointment.client_name}</p>
-                            <p className="text-sm text-muted-foreground">
+                          <div className="min-w-0">
+                            <p className="break-words font-medium">{appointment.client_name}</p>
+                            <p className="break-words text-sm text-muted-foreground">
                               {formatTime(appointment.appointment_time)} — {" "}
                               {((appointment as unknown as { services: { name: string } }).services).name}
                             </p>
                             <p className="text-xs text-muted-foreground">{appointment.client_phone}</p>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap">
                             <Badge variant={statusVariants[appointment.status as AppointmentStatus]}>
                               {statusLabels[appointment.status as AppointmentStatus]}
                             </Badge>
@@ -211,7 +215,7 @@ function AdminPage() {
                                 updateStatus.mutate({ id: appointment.id, status: value as AppointmentStatus })
                               }
                             >
-                              <SelectTrigger className="w-36">
+                              <SelectTrigger className="min-w-0 sm:w-36">
                                 <SelectValue placeholder="Alterar status" />
                               </SelectTrigger>
                               <SelectContent>
@@ -225,6 +229,8 @@ function AdminPage() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              aria-label={`Excluir agendamento de ${appointment.client_name}`}
+                              className="shrink-0"
                               onClick={() => deleteAppt.mutate(appointment.id)}
                               disabled={deleteAppt.isPending}
                             >
