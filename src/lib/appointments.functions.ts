@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -126,6 +127,16 @@ export const createAppointment = createServerFn({ method: "POST" })
     const { error } = await supabase.from("appointments").insert(insertPayload);
 
     if (error) throw new Error(error.message);
+
+    await supabase.from("clients").upsert(
+      {
+        name: data.client_name,
+        phone: data.client_phone,
+        email: data.client_email || null,
+      },
+      { onConflict: "phone", ignoreDuplicates: true },
+    );
+
     return { success: true };
   });
 
@@ -192,3 +203,107 @@ export const getProfile = createServerFn({ method: "GET" }).handler(async () => 
   if (error) return null;
   return data;
 });
+
+// ---------- Clients ----------
+
+const upsertClientSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2, "Informe o nome"),
+  phone: z.string().min(8, "Informe um telefone válido"),
+  email: z.string().email("Informe um email válido").optional().or(z.literal("")),
+  notes: z.string().optional(),
+});
+
+export const listClients = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { data, error } = await context.supabase
+      .from("clients")
+      .select("*")
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const upsertClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => upsertClientSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      email: data.email || null,
+      notes: data.notes || null,
+    };
+    const query = data.id
+      ? context.supabase.from("clients").update(payload).eq("id", data.id)
+      : context.supabase.from("clients").insert(payload);
+    const { error } = await query;
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const deleteClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { error } = await context.supabase.from("clients").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+// ---------- Services (admin) ----------
+
+const upsertServiceSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2, "Informe o nome do serviço"),
+  description: z.string().optional(),
+  duration_minutes: z.number().int().min(10, "Duração mínima de 10 minutos"),
+  price: z.number().min(0).nullable().optional(),
+  is_active: z.boolean(),
+});
+
+export const listAllServices = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { data, error } = await context.supabase
+      .from("services")
+      .select("*")
+      .order("display_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Service[];
+  });
+
+export const upsertService = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => upsertServiceSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const payload = {
+      name: data.name,
+      description: data.description || null,
+      duration_minutes: data.duration_minutes,
+      price: data.price ?? null,
+      is_active: data.is_active,
+    };
+    const query = data.id
+      ? context.supabase.from("services").update(payload).eq("id", data.id)
+      : context.supabase.from("services").insert(payload);
+    const { error } = await query;
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const deleteService = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { error } = await context.supabase.from("services").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
