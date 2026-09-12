@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { listAllServices, upsertService, deleteService } from "@/lib/appointments.functions";
-import { formatPrice } from "@/lib/appointments.utils";
+import { formatCurrency } from "@/lib/appointments.utils";
 import type { Service } from "@/lib/appointments.schemas";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -203,7 +203,7 @@ export function ServicesTab() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {service.duration_minutes} min
-                {service.price != null ? ` — ${formatPrice(service.price)}` : ""}
+                {service.price != null ? ` — ${formatCurrency(service.price)}` : ""}
               </p>
               {service.description && (
                 <p className="mt-1 break-words text-xs text-muted-foreground">
