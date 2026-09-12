@@ -126,6 +126,16 @@ export const createAppointment = createServerFn({ method: "POST" })
     const { error } = await supabase.from("appointments").insert(insertPayload);
 
     if (error) throw new Error(error.message);
+
+    await supabase.from("clients").upsert(
+      {
+        name: data.client_name,
+        phone: data.client_phone,
+        email: data.client_email || null,
+      },
+      { onConflict: "phone", ignoreDuplicates: true },
+    );
+
     return { success: true };
   });
 
