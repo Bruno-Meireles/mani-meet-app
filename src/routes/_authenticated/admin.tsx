@@ -256,6 +256,16 @@ function AdminPage() {
               )}
             </>
           )}
+            </TabsContent>
+
+            <TabsContent value="clientes">
+              <ClientsTab />
+            </TabsContent>
+
+            <TabsContent value="servicos">
+              <ServicesTab />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
