@@ -21,6 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ClientsTab } from "@/components/admin/ClientsTab";
+import { ServicesTab } from "@/components/admin/ServicesTab";
 import { listAppointments, updateAppointment, deleteAppointment } from "@/lib/appointments.functions";
 import { formatDateBR, formatTime } from "@/lib/appointments.utils";
 import type { AppointmentStatus } from "@/lib/appointments.schemas";
