@@ -21,6 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ClientsTab } from "@/components/admin/ClientsTab";
+import { ServicesTab } from "@/components/admin/ServicesTab";
 import { listAppointments, updateAppointment, deleteAppointment } from "@/lib/appointments.functions";
 import { formatDateBR, formatTime } from "@/lib/appointments.utils";
 import type { AppointmentStatus } from "@/lib/appointments.schemas";
@@ -125,6 +128,14 @@ function AdminPage() {
 
       <main className="min-w-0 flex-1 px-3 py-5 sm:px-4 sm:py-8">
         <div className="container mx-auto max-w-6xl">
+          <Tabs defaultValue="agenda">
+            <TabsList className="mb-5 w-full sm:mb-6 sm:w-auto">
+              <TabsTrigger value="agenda" className="flex-1 sm:flex-none">Agendamentos</TabsTrigger>
+              <TabsTrigger value="clientes" className="flex-1 sm:flex-none">Clientes</TabsTrigger>
+              <TabsTrigger value="servicos" className="flex-1 sm:flex-none">Serviços</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="agenda">
           <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:mb-6">
             <h2 className="min-w-0 font-serif text-xl font-semibold sm:text-2xl">
               {format(weekStart, "dd")} a {format(weekEnd, "dd 'de' MMMM", { locale: ptBR })}
@@ -245,6 +256,16 @@ function AdminPage() {
               )}
             </>
           )}
+            </TabsContent>
+
+            <TabsContent value="clientes">
+              <ClientsTab />
+            </TabsContent>
+
+            <TabsContent value="servicos">
+              <ServicesTab />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
