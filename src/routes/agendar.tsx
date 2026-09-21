@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createAppointmentSchema, type CreateAppointmentInput } from "@/lib/appointments.schemas";
-import { listServices, getAvailableSlots, createAppointment } from "@/lib/appointments.functions";
+import { listServices, getAvailableSlots, createAppointment, getProfile } from "@/lib/appointments.functions";
 import { formatCurrency } from "@/lib/appointments.utils";
 import { toast } from "sonner";
 
@@ -42,10 +42,22 @@ function BookingPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedService, setSelectedService] = useState<string>("");
+  const [confirmed, setConfirmed] = useState<{
+    clientName: string;
+    serviceName: string;
+    dateLabel: string;
+    time: string;
+  } | null>(null);
 
   const listServicesFn = useServerFn(listServices);
   const getSlotsFn = useServerFn(getAvailableSlots);
   const createAppointmentFn = useServerFn(createAppointment);
+  const getProfileFn = useServerFn(getProfile);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfileFn(),
+  });
 
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
