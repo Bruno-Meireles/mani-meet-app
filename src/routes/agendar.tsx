@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createAppointmentSchema, type CreateAppointmentInput } from "@/lib/appointments.schemas";
-import { listServices, getAvailableSlots, createAppointment } from "@/lib/appointments.functions";
+import { listServices, getAvailableSlots, createAppointment, getProfile } from "@/lib/appointments.functions";
 import { formatCurrency } from "@/lib/appointments.utils";
 import { toast } from "sonner";
 
@@ -42,10 +42,22 @@ function BookingPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedService, setSelectedService] = useState<string>("");
+  const [confirmed, setConfirmed] = useState<{
+    clientName: string;
+    serviceName: string;
+    dateLabel: string;
+    time: string;
+  } | null>(null);
 
   const listServicesFn = useServerFn(listServices);
   const getSlotsFn = useServerFn(getAvailableSlots);
   const createAppointmentFn = useServerFn(createAppointment);
+  const getProfileFn = useServerFn(getProfile);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfileFn(),
+  });
 
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
@@ -88,8 +100,16 @@ function BookingPage() {
   const appointmentTime = watch("appointment_time");
 
   const mutation = useMutation({
-    mutationFn: createAppointmentFn,
-    onSuccess: () => {
+    mutationFn: (data: CreateAppointmentInput) => createAppointmentFn({ data }),
+    onSuccess: (_result, data) => {
+      const serviceName = services.find((s) => s.id === data.service_id)?.name ?? "";
+      const dateLabel = format(new Date(`${data.appointment_date}T12:00:00`), "dd/MM/yyyy");
+      setConfirmed({
+        clientName: data.client_name,
+        serviceName,
+        dateLabel,
+        time: data.appointment_time,
+      });
       toast.success("Agendamento realizado com sucesso!");
       reset();
       setSelectedDate(undefined);
@@ -102,8 +122,16 @@ function BookingPage() {
   });
 
   const onSubmit = (data: CreateAppointmentInput) => {
-    mutation.mutate({ data });
+    mutation.mutate(data);
   };
+
+  const salonPhoneDigits = (profile?.phone ?? "").replace(/\D/g, "");
+  const whatsappUrl =
+    confirmed && salonPhoneDigits
+      ? `https://wa.me/${salonPhoneDigits.length <= 11 ? `55${salonPhoneDigits}` : salonPhoneDigits}?text=${encodeURIComponent(
+          `Olá! Acabei de agendar no site:\n\nNome: ${confirmed.clientName}\nServiço: ${confirmed.serviceName}\nData: ${confirmed.dateLabel}\nHorário: ${confirmed.time}`,
+        )}`
+      : null;
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -264,6 +292,33 @@ function BookingPage() {
               {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
             </Button>
           </form>
+
+          {confirmed && (
+            <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center shadow-sm md:p-8">
+              <h2 className="font-serif text-xl font-semibold text-foreground">
+                Agendamento confirmado!
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para{" "}
+                {confirmed.dateLabel} às {confirmed.time}.
+              </p>
+              {whatsappUrl && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Enviar confirmação pelo WhatsApp
+                </a>
+              )}
+              <div className="mt-4">
+                <Button variant="ghost" size="sm" onClick={() => setConfirmed(null)}>
+                  Fazer novo agendamento
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
