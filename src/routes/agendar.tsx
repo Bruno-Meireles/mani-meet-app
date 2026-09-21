@@ -292,6 +292,33 @@ function BookingPage() {
               {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
             </Button>
           </form>
+
+          {confirmed && (
+            <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center shadow-sm md:p-8">
+              <h2 className="font-serif text-xl font-semibold text-foreground">
+                Agendamento confirmado!
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para{" "}
+                {confirmed.dateLabel} às {confirmed.time}.
+              </p>
+              {whatsappUrl && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Enviar confirmação pelo WhatsApp
+                </a>
+              )}
+              <div className="mt-4">
+                <Button variant="ghost" size="sm" onClick={() => setConfirmed(null)}>
+                  Fazer novo agendamento
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
