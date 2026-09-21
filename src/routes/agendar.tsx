@@ -101,7 +101,16 @@ function BookingPage() {
 
   const mutation = useMutation({
     mutationFn: createAppointmentFn,
-    onSuccess: () => {
+    onSuccess: (_result, variables) => {
+      const data = variables.data;
+      const serviceName = services.find((s) => s.id === data.service_id)?.name ?? "";
+      const dateLabel = format(new Date(`${data.appointment_date}T12:00:00`), "dd/MM/yyyy");
+      setConfirmed({
+        clientName: data.client_name,
+        serviceName,
+        dateLabel,
+        time: data.appointment_time,
+      });
       toast.success("Agendamento realizado com sucesso!");
       reset();
       setSelectedDate(undefined);
@@ -116,6 +125,14 @@ function BookingPage() {
   const onSubmit = (data: CreateAppointmentInput) => {
     mutation.mutate({ data });
   };
+
+  const salonPhoneDigits = (profile?.phone ?? "").replace(/\D/g, "");
+  const whatsappUrl =
+    confirmed && salonPhoneDigits
+      ? `https://wa.me/${salonPhoneDigits.length <= 11 ? `55${salonPhoneDigits}` : salonPhoneDigits}?text=${encodeURIComponent(
+          `Olá! Acabei de agendar no site:\n\nNome: ${confirmed.clientName}\nServiço: ${confirmed.serviceName}\nData: ${confirmed.dateLabel}\nHorário: ${confirmed.time}`,
+        )}`
+      : null;
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
