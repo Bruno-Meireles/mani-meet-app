@@ -100,9 +100,8 @@ function BookingPage() {
   const appointmentTime = watch("appointment_time");
 
   const mutation = useMutation({
-    mutationFn: createAppointmentFn,
-    onSuccess: (_result, variables) => {
-      const data = variables.data;
+    mutationFn: (data: CreateAppointmentInput) => createAppointmentFn({ data }),
+    onSuccess: (_result, data) => {
       const serviceName = services.find((s) => s.id === data.service_id)?.name ?? "";
       const dateLabel = format(new Date(`${data.appointment_date}T12:00:00`), "dd/MM/yyyy");
       setConfirmed({
@@ -123,7 +122,7 @@ function BookingPage() {
   });
 
   const onSubmit = (data: CreateAppointmentInput) => {
-    mutation.mutate({ data });
+    mutation.mutate(data);
   };
 
   const salonPhoneDigits = (profile?.phone ?? "").replace(/\D/g, "");
