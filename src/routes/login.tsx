@@ -112,21 +112,6 @@ function LoginPage() {
             <p>Senha: Demo@2026</p>
           </div>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">ou</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-full"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-          >
-            Entrar com Google
-          </Button>
         </div>
       </main>
       <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
