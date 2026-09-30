@@ -1,3 +1,8 @@
+# Environment (dedicated Supabase keys — never commit)
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -19,6 +24,10 @@ dist-ssr
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
 
 # Editor directories and files
 .vscode/*
