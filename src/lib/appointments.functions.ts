@@ -124,20 +124,48 @@ export const createAppointment = createServerFn({ method: "POST" })
       notes: data.notes || null,
     };
 
-    const { error } = await supabase.from("appointments").insert(insertPayload);
+    // Use a server-side, atomic RPC to create the appointment while preventing
+    // overlapping bookings. Import the admin client dynamically so this file
+    // remains safe to bundle to the client.
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    if (error) throw new Error(error.message);
+      const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(
+        "create_appointment_locked",
+        {
+          p_client_name: insertPayload.client_name,
+          p_client_phone: insertPayload.client_phone,
+          p_client_email: insertPayload.client_email,
+          p_service_id: insertPayload.service_id,
+          p_appointment_date: insertPayload.appointment_date,
+          p_appointment_time: insertPayload.appointment_time,
+          p_notes: insertPayload.notes,
+        },
+      );
 
-    await supabase.from("clients").upsert(
-      {
-        name: data.client_name,
-        phone: data.client_phone,
-        email: data.client_email || null,
-      },
-      { onConflict: "phone", ignoreDuplicates: true },
-    );
+      if (rpcError) {
+        // The RPC raises an exception on conflict which surfaces here.
+        throw new Error(rpcError.message || "Horário não disponível");
+      }
 
-    return { success: true };
+      // Optionally upsert the client record using the admin client to ensure
+      // permissions do not block the operation.
+      await supabaseAdmin.from("clients").upsert(
+        {
+          name: insertPayload.client_name,
+          phone: insertPayload.client_phone,
+          email: insertPayload.client_email || null,
+        },
+        { onConflict: "phone", ignoreDuplicates: true },
+      );
+
+      return { success: true };
+    } catch (e: any) {
+      // Re-throw known errors so the caller shows a friendly message
+      if (e && e.message) throw new Error(e.message);
+      throw e;
+    }
+
   });
 
 export const listAppointments = createServerFn({ method: "GET" })
