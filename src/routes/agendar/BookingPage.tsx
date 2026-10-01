@@ -121,10 +121,10 @@ function BookingPage() {
         // Invalidate and refetch the exact slots query so UI updates immediately
         if (dateKey && selectedService) {
           queryClient.invalidateQueries({ queryKey: ['slots', dateKey, selectedService] });
-          queryClient.refetchQueries({ queryKey: ['slots', dateKey, selectedService], active: true });
+          queryClient.refetchQueries({ queryKey: ['slots', dateKey, selectedService], exact: true });
         } else {
           queryClient.invalidateQueries({ queryKey: ['slots'] });
-          queryClient.refetchQueries({ queryKey: ['slots'], active: true });
+          queryClient.refetchQueries({ queryKey: ['slots'], exact: true });
         }
         setValue('appointment_time', '');
       }
@@ -343,11 +343,9 @@ function BookingPage() {
                 </button>
               )}
 
-              <div className="mt-4">
-                <Button variant="ghost" size="sm" onClick={() => { setConfirmed(null); setWhatsappBlocked(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setConfirmed(null); }}>
                   Fazer novo agendamento
                 </Button>
-              </div>
             </div>
           )}
         </div>
