@@ -98,6 +98,18 @@ function BookingPage() {
     onSuccess: (_result, data) => {
       const serviceName = services.find((s) => s.id === data.service_id)?.name ?? "";
       const dateLabel = format(new Date(`${data.appointment_date}T12:00:00`), "dd/MM/yyyy");
+      // Show confirmation card with filled data (do not auto-open WhatsApp)
+      setConfirmed({
+        clientName: data.client_name,
+        serviceName,
+        dateLabel,
+        time: data.appointment_time,
+      });
+      toast.success("Agendamento realizado com sucesso!");
+      reset();
+      setSelectedDate(undefined);
+      setSelectedService("");
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
       // Do not auto-open WhatsApp. The confirmation button handles opening via user gesture.
     },
     onError: (error: Error) => {
