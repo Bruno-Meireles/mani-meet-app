@@ -23,10 +23,10 @@ export function formatCurrency(value: number | null) {
   }).format(value);
 }
 
-export function generateTimeSlots(
+export function generateAllSlots(
   date: string,
   durationMinutes: number,
-  bookedSlots: { appointment_time: string; duration_minutes: number }[],
+  intervalMinutes: number = BUSINESS_HOURS.intervalMinutes,
 ): string[] {
   const slots: string[] = [];
   const [startHour, startMinute] = BUSINESS_HOURS.start.split(":").map(Number);
@@ -35,28 +35,47 @@ export function generateTimeSlots(
   const start = new Date(`${date}T${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}:00`);
   const end = new Date(`${date}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`);
 
+  let current = start;
+  while (current < end) {
+    const timeStr = format(current, "HH:mm");
+    slots.push(timeStr);
+    current = addMinutes(current, intervalMinutes);
+  }
+
+  return slots;
+}
+
+export function generateTimeSlots(
+  date: string,
+  durationMinutes: number,
+  bookedSlots: { appointment_time: string; duration_minutes: number }[],
+): string[] {
+  // Build all candidate slots, then filter out past/conflicting ones.
+  const all = generateAllSlots(date, durationMinutes);
+  const slots: string[] = [];
   const now = new Date();
   const selectedDate = parseISO(date);
   const isToday = startOfDay(selectedDate).getTime() === startOfDay(now).getTime();
 
-  let current = start;
-  while (current < end) {
-    const slotEnd = addMinutes(current, durationMinutes);
-    const timeStr = format(current, "HH:mm");
+  const [endHour, endMinute] = BUSINESS_HOURS.end.split(":").map(Number);
+  const end = new Date(`${date}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`);
 
-    const isPast = isToday && isBefore(addMinutes(current, durationMinutes), now);
+  for (const time of all) {
+    const current = new Date(`${date}T${time}:00`);
+    const slotEnd = addMinutes(current, durationMinutes);
+
+    const isPast = isToday && isBefore(slotEnd, now);
 
     const hasConflict = bookedSlots.some((booked) => {
-      const bookedStart = new Date(`${date}T${booked.appointment_time}:00`);
+      const bookedTime = formatTime(booked.appointment_time);
+      const bookedStart = new Date(`${date}T${bookedTime}:00`);
       const bookedEnd = addMinutes(bookedStart, booked.duration_minutes);
       return current < bookedEnd && slotEnd > bookedStart;
     });
 
     if (!isPast && !hasConflict && slotEnd <= end) {
-      slots.push(timeStr);
+      slots.push(time);
     }
-
-    current = addMinutes(current, BUSINESS_HOURS.intervalMinutes);
   }
 
   return slots;
