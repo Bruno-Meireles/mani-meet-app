@@ -115,6 +115,19 @@ function BookingPage() {
       setSelectedDate(undefined);
       setSelectedService("");
       queryClient.invalidateQueries({ queryKey: ["slots"] });
+
+      // Auto-open WhatsApp with pre-filled message
+      try {
+        const salonPhoneDigits = (profile?.phone ?? "").replace(/\D/g, "");
+        if (salonPhoneDigits) {
+          const whatsappUrl = `https://wa.me/${salonPhoneDigits.length <= 11 ? `55${salonPhoneDigits}` : salonPhoneDigits}?text=${encodeURIComponent(
+            `Olá! Acabei de agendar no site:\n\nNome: ${data.client_name}\nServiço: ${serviceName}\nData: ${dateLabel}\nHorário: ${data.appointment_time}`,
+          )}`;
+          window.open(whatsappUrl, "_blank");
+        }
+      } catch (e) {
+        // ignore errors in opening the window
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || "Erro ao criar agendamento");
