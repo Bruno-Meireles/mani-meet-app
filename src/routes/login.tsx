@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +27,18 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled && data.session) {
+        navigate({ to: "/admin" });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -42,16 +53,17 @@ function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/login`,
+      },
     });
-    if (result.error) {
-      toast.error(result.error.message || "Erro ao entrar com Google");
-      return;
+    setLoading(false);
+    if (error) {
+      toast.error(error.message || "Erro ao entrar com Google");
     }
-    if (result.redirected) return;
-    toast.success("Login realizado!");
-    navigate({ to: "/admin" });
   };
 
   return (
@@ -100,20 +112,6 @@ function LoginPage() {
             <p>Senha: Demo@2026</p>
           </div>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">ou</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-full"
-            onClick={handleGoogleLogin}
-          >
-            Entrar com Google
-          </Button>
         </div>
       </main>
       <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
