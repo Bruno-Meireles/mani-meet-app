@@ -122,11 +122,11 @@ export function ClientsTab() {
             data: {
               client_name: form.name,
               client_phone: form.phone,
-              client_email: form.email || null,
+              client_email: form.email || "",
               service_id: apptService,
               appointment_date: apptDate,
               appointment_time: apptTime,
-              notes: form.notes || null,
+              notes: form.notes || "",
             },
           });
           // createAppointmentMutation.onSuccess will handle closing/resetting

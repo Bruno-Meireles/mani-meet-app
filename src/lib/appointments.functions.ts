@@ -265,11 +265,19 @@ export const upsertClient = createServerFn({ method: "POST" })
       email: data.email || null,
       notes: data.notes || null,
     };
-    const query = data.id
-      ? context.supabase.from("clients").update(payload).eq("id", data.id)
-      : context.supabase.from("clients").insert(payload);
-    const { error } = await query;
-    if (error) throw new Error(error.message);
+
+    if (data.id) {
+      const { error } = await context.supabase.from("clients").update(payload).eq("id", data.id);
+      if (error) throw new Error(error.message);
+    } else {
+      // Use upsert by phone to avoid duplicate-key errors when an admin creates
+      // a client that already exists by phone. This mirrors the behavior used
+      // elsewhere (createAppointment upsert).
+      const { data: upserted, error } = await context.supabase
+        .from("clients")
+        .upsert(payload, { onConflict: "phone" });
+      if (error) throw new Error(error.message);
+    }
     return { success: true };
   });
 
