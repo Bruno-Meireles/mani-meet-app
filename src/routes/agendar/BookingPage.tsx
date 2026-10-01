@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
@@ -33,6 +33,8 @@ function BookingPage() {
     time: string;
   } | null>(null);
   const [whatsappBlocked, setWhatsappBlocked] = useState(false);
+  const pendingWhatsappRef = useRef<string | null>(null);
+  const whatsappWindowRef = useRef<Window | null>(null);
 
   const listServicesFn = useServerFn(listServices);
   const getSlotsFn = useServerFn(getAvailableSlots);
@@ -119,9 +121,13 @@ function BookingPage() {
           const whatsappUrl = `https://wa.me/${salonPhoneDigits.length <= 11 ? `55${salonPhoneDigits}` : salonPhoneDigits}?text=${encodeURIComponent(
             `Olá! Acabei de agendar no site:\n\nNome: ${data.client_name}\nServiço: ${serviceName}\nData: ${dateLabel}\nHorário: ${data.appointment_time}`,
           )}`;
+
+          // Use a user-gesture-friendly approach: open via click fallback if popup blocked.
           const win = window.open(whatsappUrl, "_blank");
           if (!win) {
             setWhatsappBlocked(true);
+            // Save pending whatsapp url and schedule a small timeout to redirect when user interacts
+            pendingWhatsappRef.current = whatsappUrl;
             toast.error("Não foi possível abrir o WhatsApp automaticamente. Use o botão de confirmação para enviar a mensagem.");
           } else {
             try { win.focus(); } catch (e) { /* ignore */ }
@@ -346,19 +352,28 @@ function BookingPage() {
                 {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para {" "}
                 {confirmed.dateLabel} às {confirmed.time}.
               </p>
-              {whatsappBlocked && (
+          {whatsappBlocked && (
                 <p className="mt-2 text-sm text-destructive">Não foi possível abrir o WhatsApp automaticamente. Clique no botão abaixo para enviar a confirmação.</p>
               )}
               {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    // Prefer opening the saved pending URL if present (user gesture)
+                    const url = pendingWhatsappRef.current ?? whatsappUrl;
+                    pendingWhatsappRef.current = null;
+                    const win = window.open(url, "_blank");
+                    if (!win) {
+                      toast.error("Não foi possível abrir o WhatsApp. Tente novamente.");
+                    } else {
+                      try { win.focus(); } catch (e) {}
+                    }
+                  }}
                   className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Enviar confirmação pelo WhatsApp
-                </a>
+                </button>
               )}
+
               <div className="mt-4">
                 <Button variant="ghost" size="sm" onClick={() => { setConfirmed(null); setWhatsappBlocked(false); }}>
                   Fazer novo agendamento
