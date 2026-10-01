@@ -23,7 +23,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { listClients, upsertClient, deleteClient } from "@/lib/appointments.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  listClients,
+  upsertClient,
+  deleteClient,
+  listAllServices,
+  createAppointment,
+  getAvailableSlots,
+} from "@/lib/appointments.functions";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
@@ -43,13 +57,50 @@ export function ClientsTab() {
   const [editing, setEditing] = useState<Client | null>(null);
   const [form, setForm] = useState(emptyForm);
 
+  // Appointment creation fields (optional)
+  const [createAppt, setCreateAppt] = useState(false);
+  const [apptService, setApptService] = useState("");
+  const [apptDate, setApptDate] = useState(""); // yyyy-MM-dd
+  const [apptTime, setApptTime] = useState("");
+
   const listClientsFn = useServerFn(listClients);
   const upsertClientFn = useServerFn(upsertClient);
   const deleteClientFn = useServerFn(deleteClient);
+  const listAllServicesFn = useServerFn(listAllServices);
+  const createAppointmentFn = useServerFn(createAppointment);
+  const getSlotsFn = useServerFn(getAvailableSlots);
 
   const { data: clients = [], isLoading, error } = useQuery({
     queryKey: ["clients"],
     queryFn: () => listClientsFn(),
+  });
+
+  const { data: adminServices = [] } = useQuery({
+    queryKey: ["adminServices"],
+    queryFn: () => listAllServicesFn(),
+  });
+
+  const { data: apptSlots = [] } = useQuery({
+    queryKey: ["adminSlots", apptDate, apptService],
+    queryFn: () => getSlotsFn({ data: { date: apptDate, serviceId: apptService } }),
+    enabled: !!apptDate && !!apptService,
+  });
+
+  const createAppointmentMutation = useMutation({
+    mutationFn: (data: Parameters<typeof createAppointmentFn>[0]) => createAppointmentFn(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Agendamento criado");
+      setOpen(false);
+      setEditing(null);
+      setForm(emptyForm);
+      setCreateAppt(false);
+      setApptService("");
+      setApptDate("");
+      setApptTime("");
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const save = useMutation({
@@ -63,12 +114,32 @@ export function ClientsTab() {
           notes: form.notes,
         },
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast.success(editing ? "Cliente atualizado" : "Cliente cadastrado");
-      setOpen(false);
-      setEditing(null);
-      setForm(emptyForm);
+    onSuccess: async () => {
+      // If admin requested an appointment creation, call the public createAppointment RPC
+      if (createAppt) {
+        try {
+          await createAppointmentMutation.mutateAsync({
+            data: {
+              client_name: form.name,
+              client_phone: form.phone,
+              client_email: form.email || null,
+              service_id: apptService,
+              appointment_date: apptDate,
+              appointment_time: apptTime,
+              notes: form.notes || null,
+            },
+          });
+          // createAppointmentMutation.onSuccess will handle closing/resetting
+        } catch (e: any) {
+          // createAppointmentMutation already shows toast on error
+        }
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["clients"] });
+        toast.success(editing ? "Cliente atualizado" : "Cliente cadastrado");
+        setOpen(false);
+        setEditing(null);
+        setForm(emptyForm);
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -90,12 +161,21 @@ export function ClientsTab() {
       email: client.email ?? "",
       notes: client.notes ?? "",
     });
+    // reset appointment fields when editing
+    setCreateAppt(false);
+    setApptService("");
+    setApptDate("");
+    setApptTime("");
     setOpen(true);
   };
 
   const openNew = () => {
     setEditing(null);
     setForm(emptyForm);
+    setCreateAppt(false);
+    setApptService("");
+    setApptDate("");
+    setApptTime("");
     setOpen(true);
   };
 
@@ -111,8 +191,7 @@ export function ClientsTab() {
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {clients.length} cliente{clients.length === 1 ? "" : "s"} cadastrado
-          {clients.length === 1 ? "" : "s"}
+          {clients.length} cliente{clients.length === 1 ? "" : "s"} cadastrado{clients.length === 1 ? "" : "s"}
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -150,6 +229,7 @@ export function ClientsTab() {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="client-email">Email (opcional)</Label>
                 <Input
@@ -159,6 +239,7 @@ export function ClientsTab() {
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="client-notes">Observações</Label>
                 <Textarea
@@ -167,8 +248,70 @@ export function ClientsTab() {
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={save.isPending}>
-                {save.isPending ? "Salvando..." : "Salvar"}
+
+              {/* Appointment creation controls (admin-only modal) */}
+              <div className="space-y-2 pt-2 border-t border-border">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={createAppt}
+                    onChange={(e) => setCreateAppt(e.target.checked)}
+                  />
+                  <span className="text-sm">Criar agendamento agora</span>
+                </label>
+
+                {createAppt && (
+                  <div className="space-y-3">
+                    <div>
+                      <Label>Serviço</Label>
+                      <Select value={apptService} onValueChange={(v) => setApptService(v)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Escolha um serviço" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {adminServices.map((s: any) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name} — {s.duration_minutes}min
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Data</Label>
+                      <Input
+                        type="date"
+                        value={apptDate}
+                        onChange={(e) => { setApptDate(e.target.value); setApptTime(""); }}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Horário</Label>
+                      {apptDate && apptService ? (
+                        <Select value={apptTime} onValueChange={(v) => setApptTime(v)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Escolha um horário" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {apptSlots.map((slot: string) => (
+                              <SelectItem key={slot} value={slot}>
+                                {slot}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Selecione serviço e data para ver horários.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={save.isPending || createAppointmentMutation.isPending}>
+                {save.isPending || createAppointmentMutation.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </form>
           </DialogContent>
