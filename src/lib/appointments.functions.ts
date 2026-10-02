@@ -52,7 +52,7 @@ export const listServices = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const getAvailableSlots = createServerFn({ method: "GET" })
-  .inputValidator((input: { date: string; serviceId: string }) => input)
+  .validator((input: { date: string; serviceId: string }) => input)
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
 
@@ -82,8 +82,25 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
     return slots;
   });
 
+export const getAppointmentsByPhone = createServerFn({ method: "GET" })
+  .validator((input: { phone: string }) => input)
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const phoneDigits = String(data.phone || "").replace(/\D/g, "");
+    const { data: appointments, error } = await supabase
+      .from("appointments")
+      .select("*, services(name)")
+      .eq("client_phone", phoneDigits)
+      .in("status", ["scheduled", "confirmed"])
+      .order("appointment_date", { ascending: true })
+      .order("appointment_time", { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return (appointments ?? []) as Appointment[];
+  });
+
 export const createAppointment = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => createAppointmentSchema.parse(input))
+  .validator((input: unknown) => createAppointmentSchema.parse(input))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
 
@@ -130,7 +147,7 @@ export const createAppointment = createServerFn({ method: "POST" })
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-      const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(
+      const { data: rpcResult, error: rpcError } = await (supabaseAdmin as any).rpc<any>(
         "create_appointment_locked",
         {
           p_client_name: insertPayload.client_name,
@@ -170,7 +187,7 @@ export const createAppointment = createServerFn({ method: "POST" })
 
 export const listAppointments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { from: string; to: string }) => input)
+  .validator((input: { from: string; to: string }) => input)
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) {
       throw new Error("Forbidden");
@@ -190,7 +207,7 @@ export const listAppointments = createServerFn({ method: "GET" })
 
 export const updateAppointment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => updateAppointmentSchema.parse(input))
+  .validator((input: unknown) => updateAppointmentSchema.parse(input))
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) {
       throw new Error("Forbidden");
@@ -214,7 +231,7 @@ export const updateAppointment = createServerFn({ method: "POST" })
 
 export const deleteAppointment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) {
       throw new Error("Forbidden");
@@ -256,7 +273,7 @@ export const listClients = createServerFn({ method: "GET" })
 
 export const upsertClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => upsertClientSchema.parse(input))
+  .validator((input: unknown) => upsertClientSchema.parse(input))
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
     const payload = {
@@ -283,7 +300,7 @@ export const upsertClient = createServerFn({ method: "POST" })
 
 export const deleteClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
     const { error } = await context.supabase.from("clients").delete().eq("id", data.id);
@@ -316,7 +333,7 @@ export const listAllServices = createServerFn({ method: "GET" })
 
 export const upsertService = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => upsertServiceSchema.parse(input))
+  .validator((input: unknown) => upsertServiceSchema.parse(input))
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
     const payload = {
@@ -336,7 +353,7 @@ export const upsertService = createServerFn({ method: "POST" })
 
 export const deleteService = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
     const { error } = await context.supabase.from("services").delete().eq("id", data.id);

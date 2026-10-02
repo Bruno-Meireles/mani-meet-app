@@ -157,7 +157,7 @@ function BookingPage() {
     mutation.mutate(data);
   };
 
-  const fallbackPhone = (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_WHATSAPP_NUMBER) ? (import.meta as any).env.VITE_WHATSAPP_NUMBER : (process.env.VITE_WHATSAPP_NUMBER || '11989433006');
+  const fallbackPhone = (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env['VITE_WHATSAPP_NUMBER']) ? (import.meta as any).env['VITE_WHATSAPP_NUMBER'] : (process.env['VITE_WHATSAPP_NUMBER'] || '11989433006');
   const salonPhoneSource = profile?.phone ?? fallbackPhone ?? "";
   const salonPhoneDigitsRaw = salonPhoneSource.replace(/\D/g, "");
   let salonPhoneDigits = salonPhoneDigitsRaw.replace(/^0+/, "");

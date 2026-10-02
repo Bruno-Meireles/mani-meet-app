@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { to: "/", label: "Início" },
   { to: "/sobre", label: "Sobre" },
+  { to: "/meus-agendamentos", label: "Meus agendamentos" },
 //   { to: "/agendar", label: "Agendar" },
-// 
+//
 ];
 
 export function Header() {
