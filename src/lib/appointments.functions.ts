@@ -82,7 +82,7 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
     return slots;
   });
 
-export const getAppointmentsByPhone = createServerFn({ method: "GET" })
+export const getAppointmentsByPhone = createServerFn({ method: "POST" })
   .validator((input: { phone: string }) => input)
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
@@ -98,7 +98,6 @@ export const getAppointmentsByPhone = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return (appointments ?? []) as Appointment[];
   });
-
 export const createAppointment = createServerFn({ method: "POST" })
   .validator((input: unknown) => createAppointmentSchema.parse(input))
   .handler(async ({ data }) => {

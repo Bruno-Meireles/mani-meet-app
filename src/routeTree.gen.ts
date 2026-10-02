@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AgendarRouteImport } from './routes/agendar'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MeusAgendamentosRouteImport } from './routes/meus-agendamentos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
@@ -35,6 +36,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeusAgendamentosRoute = MeusAgendamentosRouteImport.update({
+  id: '/meus-agendamentos',
+  path: '/meus-agendamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -50,6 +56,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agendar': typeof AgendarRoute
   '/login': typeof LoginRoute
+  '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
 }
@@ -57,6 +64,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agendar': typeof AgendarRoute
   '/login': typeof LoginRoute
+  '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
 }
@@ -66,20 +74,23 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/agendar': typeof AgendarRoute
   '/login': typeof LoginRoute
+  '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/sobre': typeof SobreRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agendar' | '/login' | '/sobre' | '/admin'
+  fullPaths:
+    '/' | '/agendar' | '/login' | '/meus-agendamentos' | '/sobre' | '/admin'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agendar' | '/login' | '/sobre' | '/admin'
+  to: '/' | '/agendar' | '/login' | '/meus-agendamentos' | '/sobre' | '/admin'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/agendar'
     | '/login'
+    | '/meus-agendamentos'
     | '/sobre'
     | '/_authenticated/admin'
   fileRoutesById: FileRoutesById
@@ -89,6 +100,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AgendarRoute: typeof AgendarRoute
   LoginRoute: typeof LoginRoute
+  MeusAgendamentosRoute: typeof MeusAgendamentosRoute
   SobreRoute: typeof SobreRoute
 }
 
@@ -120,6 +132,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meus-agendamentos': {
+      id: '/meus-agendamentos'
+      path: '/meus-agendamentos'
+      fullPath: '/meus-agendamentos'
+      preLoaderRoute: typeof MeusAgendamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sobre': {
@@ -155,6 +174,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AgendarRoute: AgendarRoute,
   LoginRoute: LoginRoute,
+  MeusAgendamentosRoute: MeusAgendamentosRoute,
   SobreRoute: SobreRoute,
 }
 export const routeTree = rootRouteImport
