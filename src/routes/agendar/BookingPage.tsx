@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
@@ -31,7 +31,21 @@ function BookingPage() {
     serviceName: string;
     dateLabel: string;
     time: string;
+    notes?: string;
   } | null>(null);
+
+  const confirmationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (confirmed) {
+      // Scroll confirmation into view so the user doesn't miss the WhatsApp button
+      try {
+        confirmationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [confirmed]);
   const listServicesFn = useServerFn(listServices);
   const getSlotsFn = useServerFn(getAvailableSlots);
   const createAppointmentFn = useServerFn(createAppointment);
@@ -104,6 +118,7 @@ function BookingPage() {
         serviceName,
         dateLabel,
         time: data.appointment_time,
+        notes: data.notes || "",
       });
       toast.success("Agendamento realizado com sucesso!");
       reset();
@@ -154,9 +169,11 @@ function BookingPage() {
   // Use api.whatsapp.com/send which works on desktop and mobile
   const whatsappUrl =
     confirmed && salonPhoneDigits
-      ? `https://api.whatsapp.com/send?phone=${salonPhoneDigits}&text=${encodeURIComponent(
-          `Olá! Acabei de agendar no site:\n\nNome: ${confirmed.clientName}\nServiço: ${confirmed.serviceName}\nData: ${confirmed.dateLabel}\nHorário: ${confirmed.time}`,
-        )}`
+      ? (() => {
+          let msg = `Olá! Acabei de agendar no site:\n\nNome: ${confirmed.clientName}\nServiço: ${confirmed.serviceName}\nData: ${confirmed.dateLabel}\nHorário: ${confirmed.time}`;
+          if (confirmed.notes) msg += `\nObservações: ${confirmed.notes}`;
+          return `https://api.whatsapp.com/send?phone=${salonPhoneDigits}&text=${encodeURIComponent(msg)}`;
+        })()
       : null;
 
 
@@ -329,7 +346,7 @@ function BookingPage() {
           </form>
 
           {confirmed && (
-            <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center shadow-sm md:p-8">
+            <div ref={confirmationRef} id="confirmation-card" className="mt-8 rounded-2xl border border-border bg-card p-6 text-center shadow-sm md:p-8">
               <h2 className="font-serif text-xl font-semibold text-foreground">
                 Agendamento confirmado!
               </h2>
