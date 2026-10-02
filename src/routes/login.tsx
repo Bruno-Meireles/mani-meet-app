@@ -72,9 +72,9 @@ function LoginPage() {
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
           <div className="mb-6 text-center">
-            <h1 className="font-serif text-2xl font-semibold tracking-tight">Acesso administrativo</h1>
+            <h1 className="font-serif text-2xl font-semibold tracking-tight">Login</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Entre para gerenciar agendamentos.
+              Entre para gerenciar seus agendamentos.
             </p>
           </div>
 
