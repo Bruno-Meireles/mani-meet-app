@@ -84,7 +84,7 @@ function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="demo@nailstudio.app"
+                placeholder="demo@teste.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -95,7 +95,7 @@ function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Demo@2026"
+                placeholder="demoteste"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -108,8 +108,8 @@ function LoginPage() {
 
           <div className="mt-4 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Acesso de demonstração</p>
-            <p>Email: demo@nailstudio.app</p>
-            <p>Senha: Demo@2026</p>
+            <p>Email: demo@teste.com</p>
+            <p>Senha: demoteste</p>
           </div>
 
         </div>

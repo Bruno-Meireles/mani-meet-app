@@ -142,13 +142,23 @@ function BookingPage() {
     mutation.mutate(data);
   };
 
-  const salonPhoneDigits = (profile?.phone ?? "").replace(/\D/g, "");
+  const fallbackPhone = (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_WHATSAPP_NUMBER) ? (import.meta as any).env.VITE_WHATSAPP_NUMBER : (process.env.VITE_WHATSAPP_NUMBER || '11989433006');
+  const salonPhoneSource = profile?.phone ?? fallbackPhone ?? "";
+  const salonPhoneDigitsRaw = salonPhoneSource.replace(/\D/g, "");
+  let salonPhoneDigits = salonPhoneDigitsRaw.replace(/^0+/, "");
+  // If the number doesn't include country code, assume Brazil (+55)
+  if (salonPhoneDigits && !salonPhoneDigits.startsWith("55")) {
+    if (salonPhoneDigits.length <= 11) salonPhoneDigits = `55${salonPhoneDigits}`;
+  }
+
+  // Use api.whatsapp.com/send which works on desktop and mobile
   const whatsappUrl =
     confirmed && salonPhoneDigits
-      ? `https://wa.me/${salonPhoneDigits.length <= 11 ? `55${salonPhoneDigits}` : salonPhoneDigits}?text=${encodeURIComponent(
+      ? `https://api.whatsapp.com/send?phone=${salonPhoneDigits}&text=${encodeURIComponent(
           `Olá! Acabei de agendar no site:\n\nNome: ${confirmed.clientName}\nServiço: ${confirmed.serviceName}\nData: ${confirmed.dateLabel}\nHorário: ${confirmed.time}`,
         )}`
       : null;
+
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
