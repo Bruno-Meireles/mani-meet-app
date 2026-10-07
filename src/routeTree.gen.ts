@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusAgendamentosRouteImport } from './routes/meus-agendamentos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicSendRemindersRouteImport } from './routes/api/public/send-reminders'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +52,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicSendRemindersRoute = ApiPublicSendRemindersRouteImport.update({
+  id: '/api/public/send-reminders',
+  path: '/api/public/send-reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,13 +85,27 @@ export interface FileRoutesById {
   '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/sobre': typeof SobreRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/agendar' | '/login' | '/meus-agendamentos' | '/sobre' | '/admin'
+    | '/'
+    | '/agendar'
+    | '/login'
+    | '/meus-agendamentos'
+    | '/sobre'
+    | '/admin'
+    | '/api/public/send-reminders'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agendar' | '/login' | '/meus-agendamentos' | '/sobre' | '/admin'
+  to:
+    | '/'
+    | '/agendar'
+    | '/login'
+    | '/meus-agendamentos'
+    | '/sobre'
+    | '/admin'
+    | '/api/public/send-reminders'
   id:
     | '__root__'
     | '/'
@@ -93,6 +115,7 @@ export interface FileRouteTypes {
     | '/meus-agendamentos'
     | '/sobre'
     | '/_authenticated/admin'
+    | '/api/public/send-reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -102,6 +125,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MeusAgendamentosRoute: typeof MeusAgendamentosRoute
   SobreRoute: typeof SobreRoute
+  ApiPublicSendRemindersRoute: typeof ApiPublicSendRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -155,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/send-reminders': {
+      id: '/api/public/send-reminders'
+      path: '/api/public/send-reminders'
+      fullPath: '/api/public/send-reminders'
+      preLoaderRoute: typeof ApiPublicSendRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -176,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MeusAgendamentosRoute: MeusAgendamentosRoute,
   SobreRoute: SobreRoute,
+  ApiPublicSendRemindersRoute: ApiPublicSendRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

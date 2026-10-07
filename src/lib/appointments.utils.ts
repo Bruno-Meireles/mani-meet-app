@@ -7,6 +7,9 @@ export const BUSINESS_HOURS = {
   intervalMinutes: 30,
 };
 
+/** Antecedência mínima (em horas) para a cliente cancelar/reagendar sozinha. */
+export const CLIENT_CHANGE_MIN_HOURS = 12;
+
 export function formatDateBR(dateString: string) {
   return format(parseISO(dateString), "dd/MM/yyyy", { locale: ptBR });
 }

@@ -7,6 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { DashboardSummary } from "@/components/admin/DashboardSummary";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -87,6 +88,7 @@ function AdminPage() {
       updateAppointmentFn({ data: { id, status } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       toast.success("Status atualizado");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -96,6 +98,7 @@ function AdminPage() {
     mutationFn: (id: string) => deleteAppointmentFn({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       toast.success("Agendamento removido");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -140,6 +143,7 @@ function AdminPage() {
             </TabsList>
 
             <TabsContent value="agenda">
+          <DashboardSummary />
           <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:mb-8">
             <h2 className="min-w-0 font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
               {format(weekStart, "dd")} a {format(weekEnd, "dd 'de' MMMM", { locale: ptBR })}

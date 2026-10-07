@@ -7,7 +7,7 @@ import {
   createAppointmentSchema,
   updateAppointmentSchema,
 } from "./appointments.schemas";
-import { generateTimeSlots } from "./appointments.utils";
+import { generateTimeSlots, CLIENT_CHANGE_MIN_HOURS } from "./appointments.utils";
 import type { Service, Appointment } from "./appointments.schemas";
 
 function createPublicClient() {
@@ -26,6 +26,19 @@ function createPublicClient() {
       },
     },
   });
+}
+
+const SALON_TZ = "America/Sao_Paulo";
+
+/** Data de hoje (YYYY-MM-DD) no fuso do salão, independente do fuso do servidor. */
+function todayInSalonTz(offsetDays = 0) {
+  const d = new Date(Date.now() + offsetDays * 86_400_000);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: SALON_TZ }).format(d);
+}
+
+/** Instante de início do atendimento (Brasil sem horário de verão desde 2019: UTC-3). */
+function appointmentStart(date: string, time: string) {
+  return new Date(`${date}T${time.slice(0, 5)}:00-03:00`);
 }
 
 async function isAdmin(supabase: ReturnType<typeof createPublicClient>, userId: string) {
@@ -89,14 +102,15 @@ export const getAppointmentsByPhone = createServerFn({ method: "POST" })
     const phoneDigits = String(data.phone || "").replace(/\D/g, "");
     const { data: appointments, error } = await supabase
       .from("appointments")
-      .select("*, services(name)")
+      .select("id, client_name, client_phone, service_id, appointment_date, appointment_time, status, notes, services(name, duration_minutes)")
       .eq("client_phone", phoneDigits)
+      .gte("appointment_date", todayInSalonTz())
       .in("status", ["scheduled", "confirmed"])
       .order("appointment_date", { ascending: true })
       .order("appointment_time", { ascending: true });
 
     if (error) throw new Error(error.message);
-    return (appointments ?? []) as Appointment[];
+    return (appointments ?? []) as unknown as Appointment[];
   });
 export const createAppointment = createServerFn({ method: "POST" })
   .validator((input: unknown) => createAppointmentSchema.parse(input))
@@ -132,7 +146,7 @@ export const createAppointment = createServerFn({ method: "POST" })
 
     const insertPayload = {
       client_name: data.client_name,
-      client_phone: data.client_phone,
+      client_phone: data.client_phone.replace(/\D/g, ""),
       client_email: data.client_email || null,
       service_id: data.service_id,
       appointment_date: data.appointment_date,
@@ -358,4 +372,145 @@ export const deleteService = createServerFn({ method: "POST" })
     const { error } = await context.supabase.from("services").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { success: true };
+  });
+
+const clientChangeSchema = z.object({
+  id: z.string().uuid(),
+  phone: z.string().min(8),
+});
+
+/**
+ * Carrega um agendamento da cliente (id + telefone) e valida que ele pode ser alterado por ela:
+ * ativo e com antecedência mínima de CLIENT_CHANGE_MIN_HOURS.
+ */
+async function loadChangeableAppointment(id: string, phone: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: appt, error } = await supabaseAdmin
+    .from("appointments")
+    .select("id, appointment_date, appointment_time, status, service_id, services(duration_minutes)")
+    .eq("id", id)
+    .eq("client_phone", phone.replace(/\D/g, ""))
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!appt) throw new Error("Agendamento não encontrado");
+  if (!["scheduled", "confirmed"].includes(appt.status)) {
+    throw new Error("Este agendamento não pode mais ser alterado");
+  }
+  const hoursLeft = (appointmentStart(appt.appointment_date, appt.appointment_time).getTime() - Date.now()) / 3_600_000;
+  if (hoursLeft < CLIENT_CHANGE_MIN_HOURS) {
+    throw new Error(
+      `Alterações online só até ${CLIENT_CHANGE_MIN_HOURS}h antes do horário. Fale com o studio pelo WhatsApp.`,
+    );
+  }
+  return { supabaseAdmin, appt };
+}
+
+export const cancelMyAppointment = createServerFn({ method: "POST" })
+  .validator((input: unknown) => clientChangeSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin, appt } = await loadChangeableAppointment(data.id, data.phone);
+    const { error } = await supabaseAdmin
+      .from("appointments")
+      .update({ status: "cancelled" })
+      .eq("id", appt.id);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const rescheduleMyAppointment = createServerFn({ method: "POST" })
+  .validator((input: unknown) =>
+    clientChangeSchema
+      .extend({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        time: z.string().regex(/^\d{2}:\d{2}$/),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin, appt } = await loadChangeableAppointment(data.id, data.phone);
+    const duration = (appt.services as unknown as { duration_minutes: number }).duration_minutes;
+
+    const { data: booked, error: bookedError } = await supabaseAdmin
+      .from("appointments")
+      .select("appointment_time, services(duration_minutes)")
+      .eq("appointment_date", data.date)
+      .neq("id", appt.id)
+      .in("status", ["scheduled", "confirmed"]);
+    if (bookedError) throw new Error(bookedError.message);
+
+    const bookedSlots = (booked ?? []).map((b) => ({
+      appointment_time: b.appointment_time,
+      duration_minutes: (b.services as unknown as { duration_minutes: number }).duration_minutes,
+    }));
+    if (!generateTimeSlots(data.date, duration, bookedSlots).includes(data.time)) {
+      throw new Error("Horário não está mais disponível");
+    }
+
+    const { error } = await supabaseAdmin
+      .from("appointments")
+      .update({
+        appointment_date: data.date,
+        appointment_time: data.time,
+        status: "scheduled",
+        reminder_sent_at: null,
+      })
+      .eq("id", appt.id);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+/** Resumo do painel: hoje, faturamento estimado do mês, clientes novas e lembretes de amanhã. */
+export const getDashboardStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+
+    const today = todayInSalonTz();
+    const tomorrow = todayInSalonTz(1);
+    const monthStart = `${today.slice(0, 7)}-01`;
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+
+    const [monthRes, clientsRes] = await Promise.all([
+      context.supabase
+        .from("appointments")
+        .select("id, client_name, client_phone, appointment_date, appointment_time, status, reminder_sent_at, services(name, price)")
+        .gte("appointment_date", monthStart)
+        .neq("status", "cancelled")
+        .order("appointment_time", { ascending: true }),
+      context.supabase.from("clients").select("id", { count: "exact", head: true }).gte("created_at", thirtyDaysAgo),
+    ]);
+    if (monthRes.error) throw new Error(monthRes.error.message);
+    if (clientsRes.error) throw new Error(clientsRes.error.message);
+
+    type Row = {
+      id: string;
+      client_name: string;
+      client_phone: string;
+      appointment_date: string;
+      appointment_time: string;
+      status: string;
+      reminder_sent_at: string | null;
+      services: { name: string; price: number | null } | null;
+    };
+    const rows = (monthRes.data ?? []) as unknown as Row[];
+    const price = (r: Row) => Number(r.services?.price ?? 0);
+    const month = rows.filter((r) => r.appointment_date.slice(0, 7) === today.slice(0, 7));
+
+    return {
+      todayCount: rows.filter((r) => r.appointment_date === today).length,
+      monthRevenue: month.reduce((sum, r) => sum + price(r), 0),
+      monthCompletedRevenue: month.filter((r) => r.status === "completed").reduce((sum, r) => sum + price(r), 0),
+      monthCount: month.length,
+      newClients: clientsRes.count ?? 0,
+      tomorrow: rows
+        .filter((r) => r.appointment_date === tomorrow)
+        .map((r) => ({
+          id: r.id,
+          client_name: r.client_name,
+          client_phone: r.client_phone,
+          time: r.appointment_time.slice(0, 5),
+          service: r.services?.name ?? "",
+          reminderSent: !!r.reminder_sent_at,
+        })),
+    };
   });
