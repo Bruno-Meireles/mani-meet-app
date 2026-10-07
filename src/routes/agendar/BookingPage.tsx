@@ -198,10 +198,10 @@ function BookingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="flex-1 px-4 py-12">
+      <main className="flex-1 px-6 py-16">
         <div className="container mx-auto max-w-3xl">
           <div className="mb-10 text-center">
-            <h1 className="font-serif text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+            <h1 className="font-serif text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
               Agende seu horário
             </h1>
             <p className="mt-3 text-muted-foreground">
@@ -211,7 +211,7 @@ function BookingPage() {
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-8 rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8"
+            className="space-y-10 rounded-3xl border border-border/60 bg-card p-8 shadow-soft md:p-12"
           >
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
@@ -265,7 +265,7 @@ function BookingPage() {
             <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Data</Label>
-                <div className="flex justify-center rounded-xl border border-border p-3">
+                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-4">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -296,7 +296,7 @@ function BookingPage() {
                             key={slot}
                             type="button"
                             onClick={() => isAvailable && setValue("appointment_time", slot)}
-                            className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                            className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
                               appointmentTime === slot
                                 ? "border-primary bg-primary text-primary-foreground"
                                 : isAvailable
@@ -334,7 +334,7 @@ function BookingPage() {
 
             <Button
               type="submit"
-              className="w-full rounded-full"
+              className="w-full"
               size="lg"
               disabled={isSubmitting || mutation.isPending || !canSubmit}
             >
@@ -346,7 +346,7 @@ function BookingPage() {
           </form>
 
           {confirmed && (
-            <div ref={confirmationRef} id="confirmation-card" className="mt-8 rounded-2xl border border-border bg-card p-6 text-center shadow-sm md:p-8">
+            <div ref={confirmationRef} id="confirmation-card" className="mt-8 rounded-3xl border border-border/60 bg-card p-8 text-center shadow-soft md:p-12">
               <h2 className="font-serif text-xl font-semibold text-foreground">
                 Agendamento confirmado!
               </h2>
@@ -364,7 +364,7 @@ function BookingPage() {
                       try { win.focus(); } catch (e) {}
                     }
                   }}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-soft transition-all hover:bg-primary/90"
                 >
                   Enviar confirmação pelo WhatsApp
                 </button>
@@ -377,7 +377,7 @@ function BookingPage() {
           )}
         </div>
       </main>
-      <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border bg-background px-6 py-12 text-center text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} Nail Studio. Todos os direitos reservados.</p>
       </footer>
     </div>

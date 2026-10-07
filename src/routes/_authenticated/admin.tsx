@@ -6,6 +6,7 @@ import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, startOfDay, parseIS
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -118,7 +119,10 @@ function AdminPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 md:px-6">
-          <h1 className="min-w-0 truncate font-serif text-lg font-semibold sm:text-xl">Painel administrativo</h1>
+          <h1 className="flex min-w-0 items-center gap-2 truncate font-serif text-lg font-semibold tracking-tight sm:text-xl">
+            <Sparkles className="h-5 w-5 shrink-0 text-primary" />
+            <span className="truncate">Nail Studio <span className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-primary">· Painel</span></span>
+          </h1>
           <Button variant="ghost" size="sm" onClick={handleLogout} className="shrink-0 gap-2">
             <LogOut className="h-4 w-4" />
             Sair
@@ -126,18 +130,18 @@ function AdminPage() {
         </div>
       </header>
 
-      <main className="min-w-0 flex-1 px-3 py-5 sm:px-4 sm:py-8">
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 sm:py-12">
         <div className="container mx-auto max-w-6xl">
           <Tabs defaultValue="agenda">
-            <TabsList className="mb-5 w-full sm:mb-6 sm:w-auto">
+            <TabsList className="mb-8 w-full sm:mb-10 sm:w-auto">
               <TabsTrigger value="agenda" className="flex-1 sm:flex-none">Agendamentos</TabsTrigger>
               <TabsTrigger value="clientes" className="flex-1 sm:flex-none">Clientes</TabsTrigger>
               <TabsTrigger value="servicos" className="flex-1 sm:flex-none">Serviços</TabsTrigger>
             </TabsList>
 
             <TabsContent value="agenda">
-          <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:mb-6">
-            <h2 className="min-w-0 font-serif text-xl font-semibold sm:text-2xl">
+          <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:mb-8">
+            <h2 className="min-w-0 font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
               {format(weekStart, "dd")} a {format(weekEnd, "dd 'de' MMMM", { locale: ptBR })}
             </h2>
             <div className="flex shrink-0 gap-1.5 sm:gap-2">
@@ -153,7 +157,7 @@ function AdminPage() {
           {isLoading ? (
             <p className="text-muted-foreground">Carregando agendamentos...</p>
           ) : error ? (
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
               <p className="font-medium">Não foi possível carregar os agendamentos.</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Esta conta não tem permissão de administradora. Saia e entre com a conta autorizada.
@@ -161,7 +165,7 @@ function AdminPage() {
             </div>
           ) : (
             <>
-              <div className="mb-6 grid grid-cols-7 gap-1 sm:mb-8 sm:gap-2">
+              <div className="mb-8 grid grid-cols-7 gap-1.5 sm:mb-10 sm:gap-3">
                 {days.map((day) => {
                   const iso = format(day, "yyyy-MM-dd");
                   const dayAppointments = appointments.filter((a) => a.appointment_date === iso);
@@ -173,10 +177,10 @@ function AdminPage() {
                       variant="outline"
                       onClick={() => setSelectedDate(day)}
                       aria-label={`${format(day, "EEEE, dd 'de' MMMM", { locale: ptBR })}${dayAppointments.length ? `, ${dayAppointments.length} agendamento${dayAppointments.length > 1 ? "s" : ""}` : ""}`}
-                      className={`h-auto min-w-0 flex-col items-stretch gap-0 overflow-hidden px-1 py-2 text-left shadow-none sm:rounded-lg sm:p-3 ${
+                      className={`h-auto min-w-0 flex-col items-stretch gap-0 overflow-hidden px-1 py-2 text-left shadow-none rounded-2xl sm:p-4 ${
                         isSelected
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-card"
+                          ? "border-primary bg-secondary shadow-soft"
+                          : "border-border/60 bg-card hover:border-primary/40"
                       }`}
                     >
                       <p className="truncate text-[10px] font-medium uppercase text-muted-foreground sm:text-xs">
@@ -195,8 +199,8 @@ function AdminPage() {
               </div>
 
               {selectedDate && (
-                <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6">
-                  <h3 className="mb-4 font-serif text-lg font-semibold capitalize sm:text-xl">
+                <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-soft sm:p-8">
+                  <h3 className="mb-6 font-serif text-xl font-semibold capitalize sm:text-2xl">
                     {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                   </h3>
                   {selectedAppointments.length === 0 ? (
@@ -206,10 +210,10 @@ function AdminPage() {
                       {selectedAppointments.map((appointment) => (
                         <div
                           key={appointment.id}
-                          className="flex flex-col gap-4 rounded-xl border border-border bg-background p-4 md:flex-row md:items-center md:justify-between"
+                          className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-background p-5 md:flex-row md:items-center md:justify-between"
                         >
                           <div className="min-w-0">
-                            <p className="break-words font-medium">{appointment.client_name}</p>
+                            <p className="break-words font-serif text-lg font-semibold">{appointment.client_name}</p>
                             <p className="break-words text-sm text-muted-foreground">
                               {formatTime(appointment.appointment_time)} — {" "}
                               {((appointment as unknown as { services: { name: string } }).services).name}

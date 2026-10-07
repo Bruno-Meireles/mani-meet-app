@@ -67,37 +67,37 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 1rem;
 
   --font-heading: "Playfair Display", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
 
-  --background: oklch(0.985 0.01 75);
-  --foreground: oklch(0.25 0.04 30);
+  --background: oklch(0.985 0.008 55);
+  --foreground: oklch(0.27 0.03 20);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.25 0.04 30);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.04 30);
 
-  --primary: oklch(0.65 0.12 15);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.94 0.03 75);
+  --primary: oklch(0.6 0.1 8);
+  --primary-foreground: oklch(0.99 0.005 20);
+  --secondary: oklch(0.945 0.025 40);
   --secondary-foreground: oklch(0.35 0.05 30);
-  --muted: oklch(0.95 0.02 80);
-  --muted-foreground: oklch(0.55 0.04 30);
-  --accent: oklch(0.92 0.04 80);
+  --muted: oklch(0.955 0.015 50);
+  --muted-foreground: oklch(0.5 0.03 20);
+  --accent: oklch(0.93 0.035 30);
   --accent-foreground: oklch(0.3 0.05 30);
   --destructive: oklch(0.55 0.18 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.02 70);
-  --input: oklch(0.92 0.02 75);
-  --ring: oklch(0.65 0.1 15);
+  --border: oklch(0.91 0.02 45);
+  --input: oklch(0.91 0.02 45);
+  --ring: oklch(0.6 0.1 8);
 
-  --rose: oklch(0.72 0.14 15);
+  --rose: oklch(0.82 0.07 10);
   --rose-foreground: oklch(1 0 0);
   --gold: oklch(0.78 0.1 85);
   --gold-foreground: oklch(0.25 0.04 30);
-  --cream: oklch(0.97 0.01 80);
+  --cream: oklch(0.965 0.015 60);
   --cream-foreground: oklch(0.3 0.04 30);
 
   --chart-1: oklch(0.65 0.14 15);
@@ -177,5 +177,20 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.65;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 1px 2px oklch(0.4 0.05 20 / 6%), 0 12px 32px -12px oklch(0.5 0.08 10 / 18%);
+  }
+  .shadow-soft-lg {
+    box-shadow: 0 2px 4px oklch(0.4 0.05 20 / 6%), 0 24px 48px -16px oklch(0.5 0.08 10 / 28%);
   }
 }

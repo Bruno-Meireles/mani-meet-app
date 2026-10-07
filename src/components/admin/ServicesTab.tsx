@@ -102,20 +102,20 @@ export function ServicesTab() {
   if (isLoading) return <p className="text-muted-foreground">Carregando serviços...</p>;
   if (error)
     return (
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
         <p className="font-medium">Não foi possível carregar os serviços.</p>
       </div>
     );
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {services.length} serviço{services.length === 1 ? "" : "s"}
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-2" onClick={openNew}>
+            <Button className="gap-2" onClick={openNew}>
               <Plus className="h-4 w-4" />
               Novo serviço
             </Button>
@@ -125,7 +125,7 @@ export function ServicesTab() {
               <DialogTitle>{editing ? "Editar serviço" : "Novo serviço"}</DialogTitle>
             </DialogHeader>
             <form
-              className="space-y-4"
+              className="space-y-5"
               onSubmit={(e) => {
                 e.preventDefault();
                 save.mutate();
@@ -172,7 +172,7 @@ export function ServicesTab() {
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 p-4">
                 <Label htmlFor="service-active" className="cursor-pointer">
                   Visível na página de agendamento
                 </Label>
@@ -190,15 +190,15 @@ export function ServicesTab() {
         </Dialog>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {services.map((service) => (
           <div
             key={service.id}
-            className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="break-words font-medium">{service.name}</p>
+                <p className="break-words font-serif text-lg font-semibold">{service.name}</p>
                 {!service.is_active && <Badge variant="outline">Oculto</Badge>}
               </div>
               <p className="text-sm text-muted-foreground">

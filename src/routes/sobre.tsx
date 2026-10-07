@@ -41,7 +41,7 @@ function AboutPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="rounded-3xl border border-border/60 bg-card p-10 shadow-soft">
               <h2 className="mb-6 font-serif text-xl font-semibold">Informações</h2>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">

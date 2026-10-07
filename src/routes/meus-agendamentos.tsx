@@ -48,24 +48,27 @@ function MyAppointmentsPage() {
   };
 
   return (
-    <div>
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Meus agendamentos</h1>
-        <div className="max-w-md">
+      <main className="container mx-auto flex-1 px-6 py-16">
+        <div className="mb-10 text-center">
+          <h1 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">Meus agendamentos</h1>
+          <p className="mt-3 text-muted-foreground">Consulte seus horários pelo WhatsApp usado no agendamento.</p>
+        </div>
+        <div className="mx-auto max-w-md rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
           <Input
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             placeholder="Digite o WhatsApp usado (ex: 11999998888)"
           />
-          <Button className="mt-2" onClick={search}>
+          <Button className="mt-3 w-full" onClick={search}>
             Buscar
           </Button>
 
-          <div className="mt-4">
+          <div className="mt-6 space-y-3">
             {appointments.map((appointment) => (
-              <div key={appointment.id} className="p-3 border rounded mb-2">
-                <div className="font-medium">
+              <div key={appointment.id} className="rounded-2xl border border-border/60 bg-background p-5">
+                <div className="font-serif text-lg font-semibold">
                   {appointment.client_name} — {appointment.services?.name ?? ""}
                 </div>
                 <div>

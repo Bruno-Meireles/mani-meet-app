@@ -69,16 +69,16 @@ function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="mb-6 text-center">
-            <h1 className="font-serif text-2xl font-semibold tracking-tight">Login</h1>
+      <main className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md rounded-3xl border border-border/60 bg-card p-10 shadow-soft-lg">
+          <div className="mb-8 text-center">
+            <h1 className="font-serif text-3xl font-semibold tracking-tight">Login</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Entre para gerenciar seus agendamentos.
             </p>
           </div>
 
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleEmailLogin} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -101,12 +101,12 @@ function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full rounded-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Entrando..." : "Entrar com email"}
             </Button>
           </form>
 
-          <div className="mt-4 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+          <div className="mt-4 rounded-2xl border border-border/60 bg-secondary/60 p-4 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Acesso de demonstração</p>
             <p>Email: demo@teste.com</p>
             <p>Senha: demoteste</p>
@@ -114,7 +114,7 @@ function LoginPage() {
 
         </div>
       </main>
-      <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border bg-background px-6 py-12 text-center text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} Nail Studio. Todos os direitos reservados.</p>
       </footer>
     </div>
