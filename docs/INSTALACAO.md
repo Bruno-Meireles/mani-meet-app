@@ -10,8 +10,8 @@ Modelo: **uma instalação por salão** — cada cliente tem o próprio projeto 
 
 ## 1. Personalizar a marca
 
-1. Edite **`src/config/site.ts`**: nome, slogan, endereço, telefone, WhatsApp, Instagram, horário exibido, textos da home e do "Sobre", `url` do site e fuso.
-2. Cores: ajuste as variáveis `--primary`, `--secondary`, `--background` etc. no bloco `:root` de `src/styles.css`.
+1. Edite **`src/config/client.ts`** (o único arquivo que muda entre clientes): nome, slogan, endereço, telefone, WhatsApp, Instagram, horário exibido, textos da home (serviços, passos, perguntas), "Sobre", `url` do site e fuso. Depoimentos e números de destaque só entram com dados reais; deixe as listas vazias para ocultar.
+2. Cores e fontes: em `theme` do mesmo arquivo escolha o `preset` (`rose`, `lilac`, `sage`, `terracotta`, `ocean`). Para ajuste fino use `hue` (0–360), `chroma` (0–0.2), `fontHeading` e `fontBody` (nomes do Google Fonts). A paleta clara e escura inteira é gerada sozinha.
 3. Imagens: troque os arquivos de `public/images/` (mantenha os nomes) por fotos reais do salão, preferencialmente em WebP/SVG leves.
 4. `public/manifest.webmanifest` e `public/favicon.svg`: nome curto e ícone do cliente.
 

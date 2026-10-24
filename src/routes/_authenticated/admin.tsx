@@ -7,7 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { DashboardSummary } from "@/components/admin/DashboardSummary";
+import { DashboardSummary } from "@/features/admin/DashboardSummary";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -24,9 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClientsTab } from "@/components/admin/ClientsTab";
-import { ServicesTab } from "@/components/admin/ServicesTab";
-import { ScheduleTab } from "@/components/admin/ScheduleTab";
+import { ClientsTab } from "@/features/admin/ClientsTab";
+import { ServicesTab } from "@/features/admin/ServicesTab";
+import { ScheduleTab } from "@/features/admin/ScheduleTab";
 import {
   listAppointments,
   updateAppointment,

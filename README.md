@@ -45,17 +45,21 @@ Scripts: `npm run dev`, `build`, `lint`, `typecheck`, `test`, `format`.
 
 ## Personalização rápida
 
-Tudo que muda entre clientes está em [`src/config/site.ts`](src/config/site.ts) (nome, contatos, endereço, textos) e nas cores de [`src/styles.css`](src/styles.css).
+Tudo que muda entre clientes está em [`src/config/client.ts`](src/config/client.ts): nome, contatos, endereço, textos da home e o **tema** (preset de cores + fontes). A paleta clara e escura é gerada a partir do preset.
 
 ## Estrutura
 
+Arquitetura em camadas, com fronteiras impostas pelo lint. Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+
 ```
-src/config/site.ts        configuração white-label
-src/lib/availability.ts   cálculo de horários livres (puro, testado)
-src/lib/appointments.*    server functions, schemas e utilidades
-src/routes/               páginas públicas, /admin e rotas de API
-src/components/admin/     abas do painel
-supabase/migrations/      banco, políticas de segurança e funções
+src/domain/          regras puras e testadas (horários, política de alteração, .ics)
+src/application/     casos de uso + portas (agendar, cancelar, remarcar)
+src/infrastructure/  adaptadores (Supabase, limitador de tentativas)
+src/actions/         server functions finas
+src/features/        telas por funcionalidade (landing, booking, admin, site-shell)
+src/config/          client.ts (dados do cliente), theme.ts, site.ts (SEO)
+src/routes/          páginas e rotas de API
+supabase/migrations/ banco, políticas de segurança e funções
 ```
 
 ## Observação sobre a Lovable
