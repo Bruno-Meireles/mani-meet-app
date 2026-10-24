@@ -13,7 +13,7 @@ export const siteConfig = {
   description:
     "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade.",
   /** URL pública do site (sem barra final). Usada em sitemap e Open Graph. */
-  url: "https://mani-meet-app.vercel.app",
+  url: "https://mani-meet-app-three.vercel.app",
   locale: "pt-BR",
   /** Fuso do salão (IANA). */
   timezone: "America/Sao_Paulo",
