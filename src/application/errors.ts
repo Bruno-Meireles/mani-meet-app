@@ -11,7 +11,8 @@ const MESSAGES: Record<AppErrorCode, string> = {
   slot_unavailable: "Horário não está mais disponível",
   appointment_not_found: "Agendamento não encontrado",
   appointment_not_active: "Este agendamento não pode mais ser alterado",
-  change_too_late: "Alterações online só até {hours}h antes do horário. Fale com o studio pelo WhatsApp.",
+  change_too_late:
+    "Alterações online só até {hours}h antes do horário. Fale com o studio pelo WhatsApp.",
   rate_limited: "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
 };
 
@@ -22,7 +23,10 @@ export class AppError extends Error {
     vars: Record<string, string | number> = {},
   ) {
     super(
-      Object.entries(vars).reduce((msg, [k, v]) => msg.replace(`{${k}}`, String(v)), MESSAGES[code]),
+      Object.entries(vars).reduce(
+        (msg, [k, v]) => msg.replace(`{${k}}`, String(v)),
+        MESSAGES[code],
+      ),
     );
     this.name = "AppError";
   }

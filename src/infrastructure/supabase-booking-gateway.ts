@@ -30,7 +30,11 @@ export async function loadScheduleFrom(db: Db): Promise<Schedule> {
 export function createSupabaseBookingGateway(db: Db): BookingGateway {
   return {
     async findService(id) {
-      const { data } = await db.from("services").select("id, duration_minutes").eq("id", id).maybeSingle();
+      const { data } = await db
+        .from("services")
+        .select("id, duration_minutes")
+        .eq("id", id)
+        .maybeSingle();
       return data ?? null;
     },
 
@@ -68,10 +72,12 @@ export function createSupabaseBookingGateway(db: Db): BookingGateway {
       });
       if (error) throw new AppError("slot_unavailable");
 
-      await db.from("clients").upsert(
-        { name: booking.client_name, phone: booking.client_phone, email: booking.client_email },
-        { onConflict: "phone", ignoreDuplicates: true },
-      );
+      await db
+        .from("clients")
+        .upsert(
+          { name: booking.client_name, phone: booking.client_phone, email: booking.client_email },
+          { onConflict: "phone", ignoreDuplicates: true },
+        );
     },
 
     async findForClient(id, phone): Promise<ClientAppointment | null> {

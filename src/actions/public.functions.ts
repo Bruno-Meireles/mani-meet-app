@@ -9,8 +9,18 @@ import {
 import { AppError } from "@/application/errors";
 import { createAppointmentSchema } from "@/domain/appointments/schemas";
 import type { Appointment, Service } from "@/domain/appointments/schemas";
-import { createSupabaseBookingGateway, loadScheduleFrom } from "@/infrastructure/supabase-booking-gateway";
-import { clientIp, clock, createPublicClient, getServiceClient, limiter, todayInSalonTz } from "./context.server";
+import {
+  createSupabaseBookingGateway,
+  loadScheduleFrom,
+} from "@/infrastructure/supabase-booking-gateway";
+import {
+  clientIp,
+  clock,
+  createPublicClient,
+  getServiceClient,
+  limiter,
+  todayInSalonTz,
+} from "./context.server";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -55,7 +65,8 @@ export const createAppointment = createServerFn({ method: "POST" })
 export const getAppointmentsByPhone = createServerFn({ method: "POST" })
   .validator((input: unknown) => z.object({ phone: z.string().min(8).max(20) }).parse(input))
   .handler(async ({ data }) => {
-    if (!limiter.allow(`lookup:${await clientIp()}`, 20, 10 * 60_000)) throw new AppError("rate_limited");
+    if (!limiter.allow(`lookup:${await clientIp()}`, 20, 10 * 60_000))
+      throw new AppError("rate_limited");
     const supabase = await getServiceClient();
     const { data: appointments, error } = await supabase
       .from("appointments")

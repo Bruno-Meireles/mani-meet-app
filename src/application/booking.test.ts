@@ -35,7 +35,10 @@ const input = (overrides = {}) => ({
 
 describe("getAvailableSlots", () => {
   it("lista os horários livres do dia", async () => {
-    const slots = await getAvailableSlots({ date: "2026-11-12", serviceId: "svc-1" }, { gateway, clock });
+    const slots = await getAvailableSlots(
+      { date: "2026-11-12", serviceId: "svc-1" },
+      { gateway, clock },
+    );
     expect(slots[0]).toBe("09:00");
     expect(slots).toContain("18:00");
     expect(slots).not.toContain("18:30");
@@ -43,21 +46,33 @@ describe("getAvailableSlots", () => {
 
   it("remove horários ocupados por agendamento ativo", async () => {
     gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00" });
-    const slots = await getAvailableSlots({ date: "2026-11-12", serviceId: "svc-1" }, { gateway, clock });
+    const slots = await getAvailableSlots(
+      { date: "2026-11-12", serviceId: "svc-1" },
+      { gateway, clock },
+    );
     expect(slots).not.toContain("10:00");
     expect(slots).not.toContain("09:30");
     expect(slots).toContain("11:00");
   });
 
   it("agendamento cancelado não ocupa horário", async () => {
-    gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00", status: "cancelled" });
-    const slots = await getAvailableSlots({ date: "2026-11-12", serviceId: "svc-1" }, { gateway, clock });
+    gateway.addAppointment({
+      appointment_date: "2026-11-12",
+      appointment_time: "10:00",
+      status: "cancelled",
+    });
+    const slots = await getAvailableSlots(
+      { date: "2026-11-12", serviceId: "svc-1" },
+      { gateway, clock },
+    );
     expect(slots).toContain("10:00");
   });
 
   it("dia bloqueado não tem horários", async () => {
     gateway.schedule = { ...gateway.schedule, blockedDates: ["2026-11-12"] };
-    expect(await getAvailableSlots({ date: "2026-11-12", serviceId: "svc-1" }, { gateway, clock })).toEqual([]);
+    expect(
+      await getAvailableSlots({ date: "2026-11-12", serviceId: "svc-1" }, { gateway, clock }),
+    ).toEqual([]);
   });
 
   it("serviço inexistente", async () => {
@@ -76,19 +91,25 @@ describe("bookAppointment", () => {
 
   it("recusa horário fora do expediente", async () => {
     await expect(
-      bookAppointment(input({ appointment_time: "21:00" }), { gateway, clock, limiter: allow }, "ip"),
+      bookAppointment(
+        input({ appointment_time: "21:00" }),
+        { gateway, clock, limiter: allow },
+        "ip",
+      ),
     ).rejects.toMatchObject({ code: "slot_unavailable" });
   });
 
   it("recusa horário já ocupado", async () => {
     await bookAppointment(input(), { gateway, clock, limiter: allow }, "ip");
-    await expect(bookAppointment(input(), { gateway, clock, limiter: allow }, "ip")).rejects.toBeInstanceOf(
-      AppError,
-    );
+    await expect(
+      bookAppointment(input(), { gateway, clock, limiter: allow }, "ip"),
+    ).rejects.toBeInstanceOf(AppError);
   });
 
   it("respeita o limite de tentativas", async () => {
-    await expect(bookAppointment(input(), { gateway, clock, limiter: deny }, "ip")).rejects.toMatchObject({
+    await expect(
+      bookAppointment(input(), { gateway, clock, limiter: deny }, "ip"),
+    ).rejects.toMatchObject({
       code: "rate_limited",
     });
     expect(gateway.rows).toHaveLength(0);
@@ -97,22 +118,43 @@ describe("bookAppointment", () => {
 
 describe("cancelClientAppointment", () => {
   it("cancela com antecedência suficiente", async () => {
-    const appt = gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00" });
-    await cancelClientAppointment({ id: appt.id, phone: "(11) 99999-0000" }, { gateway, clock, limiter: allow }, "ip");
+    const appt = gateway.addAppointment({
+      appointment_date: "2026-11-12",
+      appointment_time: "10:00",
+    });
+    await cancelClientAppointment(
+      { id: appt.id, phone: "(11) 99999-0000" },
+      { gateway, clock, limiter: allow },
+      "ip",
+    );
     expect(gateway.rows[0]?.status).toBe("cancelled");
   });
 
   it("não cancela agendamento de outro telefone", async () => {
-    const appt = gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00" });
+    const appt = gateway.addAppointment({
+      appointment_date: "2026-11-12",
+      appointment_time: "10:00",
+    });
     await expect(
-      cancelClientAppointment({ id: appt.id, phone: "11888887777" }, { gateway, clock, limiter: allow }, "ip"),
+      cancelClientAppointment(
+        { id: appt.id, phone: "11888887777" },
+        { gateway, clock, limiter: allow },
+        "ip",
+      ),
     ).rejects.toMatchObject({ code: "appointment_not_found" });
   });
 
   it("recusa em cima da hora", async () => {
-    const appt = gateway.addAppointment({ appointment_date: "2026-11-10", appointment_time: "15:00" });
+    const appt = gateway.addAppointment({
+      appointment_date: "2026-11-10",
+      appointment_time: "15:00",
+    });
     await expect(
-      cancelClientAppointment({ id: appt.id, phone: "11999990000" }, { gateway, clock, limiter: allow }, "ip"),
+      cancelClientAppointment(
+        { id: appt.id, phone: "11999990000" },
+        { gateway, clock, limiter: allow },
+        "ip",
+      ),
     ).rejects.toMatchObject({ code: "change_too_late" });
   });
 
@@ -123,24 +165,37 @@ describe("cancelClientAppointment", () => {
       status: "cancelled",
     });
     await expect(
-      cancelClientAppointment({ id: appt.id, phone: "11999990000" }, { gateway, clock, limiter: allow }, "ip"),
+      cancelClientAppointment(
+        { id: appt.id, phone: "11999990000" },
+        { gateway, clock, limiter: allow },
+        "ip",
+      ),
     ).rejects.toMatchObject({ code: "appointment_not_active" });
   });
 });
 
 describe("rescheduleClientAppointment", () => {
   it("remarca para um horário livre", async () => {
-    const appt = gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00" });
+    const appt = gateway.addAppointment({
+      appointment_date: "2026-11-12",
+      appointment_time: "10:00",
+    });
     await rescheduleClientAppointment(
       { id: appt.id, phone: "11999990000", date: "2026-11-13", time: "14:00" },
       { gateway, clock, limiter: allow },
       "ip",
     );
-    expect(gateway.rows[0]).toMatchObject({ appointment_date: "2026-11-13", appointment_time: "14:00" });
+    expect(gateway.rows[0]).toMatchObject({
+      appointment_date: "2026-11-13",
+      appointment_time: "14:00",
+    });
   });
 
   it("permite remarcar para um horário que sobrepõe o próprio agendamento", async () => {
-    const appt = gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00" });
+    const appt = gateway.addAppointment({
+      appointment_date: "2026-11-12",
+      appointment_time: "10:00",
+    });
     await rescheduleClientAppointment(
       { id: appt.id, phone: "11999990000", date: "2026-11-12", time: "10:30" },
       { gateway, clock, limiter: allow },
@@ -150,8 +205,15 @@ describe("rescheduleClientAppointment", () => {
   });
 
   it("recusa horário ocupado por outra cliente", async () => {
-    const appt = gateway.addAppointment({ appointment_date: "2026-11-12", appointment_time: "10:00" });
-    gateway.addAppointment({ appointment_date: "2026-11-13", appointment_time: "14:00", client_phone: "11777776666" });
+    const appt = gateway.addAppointment({
+      appointment_date: "2026-11-12",
+      appointment_time: "10:00",
+    });
+    gateway.addAppointment({
+      appointment_date: "2026-11-13",
+      appointment_time: "14:00",
+      client_phone: "11777776666",
+    });
     await expect(
       rescheduleClientAppointment(
         { id: appt.id, phone: "11999990000", date: "2026-11-13", time: "14:00" },

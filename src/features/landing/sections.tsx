@@ -1,5 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { CalendarCheck, ChevronDown, Clock, MapPin, MessageCircle, Quote, ShieldCheck } from "lucide-react";
+import {
+  CalendarCheck,
+  ChevronDown,
+  Clock,
+  MapPin,
+  MessageCircle,
+  Quote,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { siteConfig, whatsappDigits } from "@/config/site";
 
@@ -26,7 +34,8 @@ export function Hero() {
             {home.heroBadge}
           </p>
           <h1 className="font-serif text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            {home.heroTitleStart} <span className="italic text-primary">{home.heroTitleHighlight}</span>
+            {home.heroTitleStart}{" "}
+            <span className="italic text-primary">{home.heroTitleHighlight}</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:mx-0 md:text-lg">
             {home.heroText}
@@ -37,7 +46,12 @@ export function Hero() {
                 <CalendarCheck className="h-4 w-4" aria-hidden /> Agendar agora
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="w-full rounded-full px-8 sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="w-full rounded-full px-8 sm:w-auto"
+            >
               <Link to="/sobre">Conhecer o espaço</Link>
             </Button>
           </div>
@@ -114,7 +128,9 @@ export function Services() {
               </div>
               <div className="p-7">
                 <h3 className="font-serif text-2xl font-semibold">{s.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.description}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {s.description}
+                </p>
                 <Link
                   to="/agendar"
                   className="mt-5 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
@@ -162,7 +178,10 @@ export function Testimonials() {
         <SectionTitle eyebrow="Depoimentos">Quem já passou por aqui</SectionTitle>
         <div className="grid gap-6 md:grid-cols-3">
           {home.testimonials.map((t) => (
-            <figure key={t.name} className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+            <figure
+              key={t.name}
+              className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft"
+            >
               <Quote className="h-6 w-6 text-primary/60" aria-hidden />
               <blockquote className="mt-4 text-sm leading-relaxed">{t.text}</blockquote>
               <figcaption className="mt-5 text-sm font-semibold">{t.name}</figcaption>
@@ -243,12 +262,19 @@ export function FinalCta() {
   return (
     <section className="px-6 pb-24">
       <div className="mx-auto max-w-5xl rounded-[2rem] bg-primary px-8 py-14 text-center text-primary-foreground shadow-soft-lg md:py-20">
-        <h2 className="font-serif text-3xl font-semibold md:text-5xl">Seu horário está esperando</h2>
+        <h2 className="font-serif text-3xl font-semibold md:text-5xl">
+          Seu horário está esperando
+        </h2>
         <p className="mx-auto mt-4 max-w-xl text-primary-foreground/85">
           Escolha o serviço, o dia e o horário que cabem na sua rotina.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button asChild size="lg" variant="secondary" className="w-full rounded-full px-8 sm:w-auto">
+          <Button
+            asChild
+            size="lg"
+            variant="secondary"
+            className="w-full rounded-full px-8 sm:w-auto"
+          >
             <Link to="/agendar">Agendar agora</Link>
           </Button>
           <Button

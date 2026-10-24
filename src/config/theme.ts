@@ -155,13 +155,17 @@ export function themeToCss(theme: ThemeSpec): string {
     "--font-heading": `"${theme.fontHeading}",Georgia,serif`,
     "--font-body": `"${theme.fontBody}",system-ui,sans-serif`,
   };
-  return [block(":root", { ...shared, ...lightVars(theme) }), block(".dark", darkVars(theme))].join("\n");
+  return [block(":root", { ...shared, ...lightVars(theme) }), block(".dark", darkVars(theme))].join(
+    "\n",
+  );
 }
 
 /** URL do Google Fonts com as duas famílias do tema. */
 export function googleFontsHref(theme: ThemeSpec): string {
   const family = (name: string, weights: string) =>
     `family=${name.replace(/ /g, "+")}:wght@${weights}`;
-  const families = [...new Set([family(theme.fontHeading, "500;600;700"), family(theme.fontBody, "400;500;600")])];
+  const families = [
+    ...new Set([family(theme.fontHeading, "500;600;700"), family(theme.fontBody, "400;500;600")]),
+  ];
   return `https://fonts.googleapis.com/css2?${families.join("&")}&display=swap`;
 }

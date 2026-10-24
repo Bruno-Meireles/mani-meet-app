@@ -30,7 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { listClients, upsertClient, deleteClient, listAllServices } from "@/actions/admin.functions";
+import {
+  listClients,
+  upsertClient,
+  deleteClient,
+  listAllServices,
+} from "@/actions/admin.functions";
 import { createAppointment, getAvailableSlots } from "@/actions/public.functions";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";

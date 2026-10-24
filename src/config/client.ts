@@ -76,7 +76,10 @@ export const siteConfig = {
     steps: [
       { title: "Escolha o serviço", text: "Veja as opções, a duração e o valor de cada uma." },
       { title: "Marque dia e horário", text: "Só aparecem os horários realmente livres." },
-      { title: "Receba a confirmação", text: "Adicione ao calendário e fale pelo WhatsApp se precisar." },
+      {
+        title: "Receba a confirmação",
+        text: "Adicione ao calendário e fale pelo WhatsApp se precisar.",
+      },
     ],
     /**
      * Depoimentos, só com avaliações REAIS (com autorização). Lista vazia oculta a seção.

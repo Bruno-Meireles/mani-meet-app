@@ -57,11 +57,28 @@ export default tseslint.config(
   // Fronteiras entre camadas (veja docs/ARQUITETURA.md). Cada camada só enxerga as de baixo.
   // O ESLint não mescla `no-restricted-imports` entre blocos, então cada um repete a regra do server-only.
   layer("src/domain/**/*.{ts,tsx}", [
-    ...inner("application", "infrastructure", "actions", "features", "shared", "components", "routes", "integrations"),
+    ...inner(
+      "application",
+      "infrastructure",
+      "actions",
+      "features",
+      "shared",
+      "components",
+      "routes",
+      "integrations",
+    ),
     ...pkgs("react", "react-dom", "@supabase/*", "@tanstack/*"),
   ]),
   layer("src/application/**/*.{ts,tsx}", [
-    ...inner("infrastructure", "actions", "features", "shared", "components", "routes", "integrations"),
+    ...inner(
+      "infrastructure",
+      "actions",
+      "features",
+      "shared",
+      "components",
+      "routes",
+      "integrations",
+    ),
     ...pkgs("react", "react-dom", "@supabase/*", "@tanstack/*"),
   ]),
   layer("src/infrastructure/**/*.{ts,tsx}", [
@@ -72,7 +89,8 @@ export default tseslint.config(
     ...inner("infrastructure", "application"),
     {
       group: ["@/integrations/supabase/client.server"],
-      message: "Código de tela não pode usar a chave de serviço; chame uma server function em src/actions.",
+      message:
+        "Código de tela não pode usar a chave de serviço; chame uma server function em src/actions.",
     },
   ]),
   eslintPluginPrettier,

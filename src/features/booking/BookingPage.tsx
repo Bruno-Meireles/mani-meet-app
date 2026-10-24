@@ -1,22 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Header } from "@/features/site-shell/Header";
-import { Footer } from "@/features/site-shell/Footer";
+import { Check, Clock } from "lucide-react";
+import { SiteLayout } from "@/features/site-shell/SiteLayout";
 import { siteConfig, whatsappDigits } from "@/config/site";
+import { CLIENT_CHANGE_MIN_HOURS } from "@/domain/appointments/change-policy";
 import { buildIcs } from "@/domain/scheduling/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createAppointmentSchema, type CreateAppointmentInput } from "@/domain/appointments/schemas";
+  createAppointmentSchema,
+  type CreateAppointmentInput,
+} from "@/domain/appointments/schemas";
 import {
   listServices,
   getAvailableSlots,
@@ -236,84 +233,81 @@ function BookingPage() {
     setValue("appointment_time", "");
   };
 
+  const formId = "booking-form";
+  const stepTitle = "flex items-center gap-3 font-serif text-xl font-semibold";
+  const stepBadge =
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground";
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1 px-6 py-16">
-        <div className="container mx-auto max-w-3xl">
-          <div className="mb-10 text-center">
-            <h1 className="font-serif text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
-              Agende seu horário
-            </h1>
-            <p className="mt-3 text-muted-foreground">
-              Preencha seus dados e escolha o serviço, dia e horário.
-            </p>
-          </div>
+    <SiteLayout showActionBar={false}>
+      <div className="bg-gradient-to-b from-secondary/60 to-background px-6 pb-6 pt-14 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+          Agendamento online
+        </p>
+        <h1 className="mt-3 font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+          Agende seu horário
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+          Escolha o serviço, o dia e o horário. Leva menos de um minuto.
+        </p>
+      </div>
 
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-10 rounded-3xl border border-border/60 bg-card p-8 shadow-soft md:p-12"
-          >
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="client_name">Nome completo</Label>
-                <Input id="client_name" placeholder="Seu nome" {...register("client_name")} />
-                {errors.client_name && (
-                  <p className="text-xs text-destructive">{errors.client_name.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
-                <Input
-                  id="client_phone"
-                  placeholder="(11) 99999-9999"
-                  {...register("client_phone")}
-                />
-                {errors.client_phone && (
-                  <p className="text-xs text-destructive">{errors.client_phone.message}</p>
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="client_email">Email (opcional)</Label>
-                <Input
-                  id="client_email"
-                  placeholder="seu@email.com"
-                  {...register("client_email")}
-                />
-                {errors.client_email && (
-                  <p className="text-xs text-destructive">{errors.client_email.message}</p>
-                )}
-              </div>
+      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[1fr_22rem]">
+        <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
+          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
+            <h2 className={stepTitle}>
+              <span className={stepBadge}>1</span> Escolha o serviço
+            </h2>
+            <input type="hidden" {...register("service_id")} />
+            <div className="mt-6 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Serviço">
+              {services.map((service) => {
+                const active = service.id === selectedService;
+                return (
+                  <button
+                    key={service.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => handleServiceChange(service.id)}
+                    className={`rounded-2xl border p-4 text-left transition-all ${
+                      active
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                        : "border-border bg-background hover:border-primary/40 hover:bg-accent/40"
+                    }`}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="font-medium">{service.name}</span>
+                      {active && <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden />}
+                    </span>
+                    {service.description && (
+                      <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
+                        {service.description}
+                      </span>
+                    )}
+                    <span className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" aria-hidden /> {service.duration_minutes} min
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {formatCurrency(service.price)}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+            {errors.service_id && (
+              <p className="mt-3 text-xs text-destructive">{errors.service_id.message}</p>
+            )}
+          </section>
 
-            <div className="space-y-2">
-              <Label>Serviço</Label>
-              <Select value={selectedService} onValueChange={handleServiceChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Escolha um serviço" />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name} — {formatCurrency(service.price)} / {service.duration_minutes}
-                      min
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <input type="hidden" {...register("service_id")} />
-              {errors.service_id && (
-                <p className="text-xs text-destructive">{errors.service_id.message}</p>
-              )}
-              {selectedServiceData && (
-                <p className="text-sm text-muted-foreground">{selectedServiceData.description}</p>
-              )}
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Data</Label>
-                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-4">
+          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
+            <h2 className={stepTitle}>
+              <span className={stepBadge}>2</span> Dia e horário
+            </h2>
+            <div className="mt-6 grid gap-8 md:grid-cols-2">
+              <div>
+                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-3">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -322,20 +316,17 @@ function BookingPage() {
                     locale={ptBR}
                   />
                 </div>
-                {appointmentDate && (
-                  <p className="text-center text-sm text-muted-foreground">
-                    {format(selectedDate!, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                  </p>
-                )}
                 {errors.appointment_date && (
-                  <p className="text-xs text-destructive">{errors.appointment_date.message}</p>
+                  <p className="mt-2 text-xs text-destructive">{errors.appointment_date.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label>Horário</Label>
+              <div>
                 {selectedDate && selectedService ? (
                   <>
+                    <p className="mb-3 text-sm font-medium capitalize">
+                      {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                    </p>
                     <div className="grid grid-cols-3 gap-2">
                       {allSlots.map((slot) => {
                         const isAvailable = slots.includes(slot);
@@ -348,12 +339,12 @@ function BookingPage() {
                               appointmentTime === slot
                                 ? "border-primary bg-primary text-primary-foreground"
                                 : isAvailable
-                                  ? "border-border bg-background hover:bg-accent"
-                                  : "border-border bg-muted text-muted-foreground cursor-not-allowed opacity-60"
+                                  ? "border-border bg-background hover:border-primary/50 hover:bg-accent"
+                                  : "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-50"
                             }`}
                             disabled={!isAvailable}
-                            title={isAvailable ? "Selecionar horário" : "Horário não disponível"}
-                            aria-disabled={!isAvailable}
+                            aria-pressed={appointmentTime === slot}
+                            title={isAvailable ? "Selecionar horário" : "Horário indisponível"}
                           >
                             {slot}
                           </button>
@@ -361,61 +352,166 @@ function BookingPage() {
                       })}
                     </div>
                     {slots.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Nenhum horário disponível para essa data.
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Nenhum horário livre nesta data. Tente outro dia.
                       </p>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Selecione um serviço e uma data para ver os horários.
-                  </p>
+                  <div className="flex h-full min-h-40 items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                    Escolha um serviço e um dia para ver os horários livres.
+                  </div>
                 )}
                 {errors.appointment_time && (
-                  <p className="text-xs text-destructive">{errors.appointment_time.message}</p>
+                  <p className="mt-2 text-xs text-destructive">{errors.appointment_time.message}</p>
                 )}
               </div>
             </div>
+          </section>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Observações (opcional)</Label>
-              <Input
-                id="notes"
-                placeholder="Alguma preferência ou informação extra"
-                {...register("notes")}
-              />
+          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
+            <h2 className={stepTitle}>
+              <span className={stepBadge}>3</span> Seus dados
+            </h2>
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="client_name">Nome completo</Label>
+                <Input
+                  id="client_name"
+                  placeholder="Seu nome"
+                  autoComplete="name"
+                  {...register("client_name")}
+                />
+                {errors.client_name && (
+                  <p className="text-xs text-destructive">{errors.client_name.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
+                <Input
+                  id="client_phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="(11) 99999-9999"
+                  {...register("client_phone")}
+                />
+                {errors.client_phone && (
+                  <p className="text-xs text-destructive">{errors.client_phone.message}</p>
+                )}
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="client_email">E-mail (opcional, para receber o lembrete)</Label>
+                <Input
+                  id="client_email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="seu@email.com"
+                  {...register("client_email")}
+                />
+                {errors.client_email && (
+                  <p className="text-xs text-destructive">{errors.client_email.message}</p>
+                )}
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="notes">Observações (opcional)</Label>
+                <Input
+                  id="notes"
+                  placeholder="Alguma preferência ou informação extra"
+                  {...register("notes")}
+                />
+              </div>
             </div>
+          </section>
 
+          <div className="lg:hidden">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full rounded-full"
               size="lg"
               disabled={isSubmitting || mutation.isPending || !canSubmit}
             >
               {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
             </Button>
-            {(!canSubmit || !appointmentTime) && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Escolha um horário disponível antes de confirmar.
+            {!canSubmit && (
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                Escolha serviço, dia e horário para confirmar.
               </p>
             )}
-          </form>
+          </div>
+        </form>
 
-          {confirmed && (
-            <div
-              ref={confirmationRef}
-              id="confirmation-card"
-              className="mt-8 rounded-3xl border border-border/60 bg-card p-8 text-center shadow-soft md:p-12"
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft">
+            <h2 className="font-serif text-xl font-semibold">Resumo</h2>
+            <dl className="mt-5 space-y-4 text-sm">
+              <div>
+                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Serviço</dt>
+                <dd className="mt-1 font-medium">{selectedServiceData?.name ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Data e hora
+                </dt>
+                <dd className="mt-1 font-medium">
+                  {selectedDate
+                    ? `${format(selectedDate, "dd/MM/yyyy")}${appointmentTime ? ` às ${appointmentTime}` : ""}`
+                    : "—"}
+                </dd>
+              </div>
+              <div className="flex items-end justify-between border-t border-border/60 pt-4">
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Duração
+                  </dt>
+                  <dd className="mt-1 font-medium">
+                    {selectedServiceData ? `${selectedServiceData.duration_minutes} min` : "—"}
+                  </dd>
+                </div>
+                <div className="text-right">
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">Valor</dt>
+                  <dd className="mt-1 font-serif text-2xl font-semibold text-primary">
+                    {selectedServiceData ? formatCurrency(selectedServiceData.price) : "—"}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+            <Button
+              type="submit"
+              form={formId}
+              className="mt-6 hidden w-full rounded-full lg:inline-flex"
+              size="lg"
+              disabled={isSubmitting || mutation.isPending || !canSubmit}
             >
-              <h2 className="font-serif text-xl font-semibold text-foreground">
-                Agendamento confirmado!
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para{" "}
-                {confirmed.dateLabel} às {confirmed.time}.
-              </p>
+              {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
+            </Button>
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+              Você pode remarcar ou cancelar em “Meus agendamentos” com até{" "}
+              {CLIENT_CHANGE_MIN_HOURS} horas de antecedência.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      {confirmed && (
+        <div className="mx-auto max-w-3xl px-6 pb-16">
+          <div
+            ref={confirmationRef}
+            id="confirmation-card"
+            className="rounded-3xl border border-primary/30 bg-card p-8 text-center shadow-soft-lg md:p-12"
+          >
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Check className="h-7 w-7" aria-hidden />
+            </span>
+            <h2 className="mt-4 font-serif text-2xl font-semibold">Agendamento confirmado!</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para{" "}
+              {confirmed.dateLabel} às {confirmed.time}.
+            </p>
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               {whatsappUrl && (
-                <button
+                <Button
+                  className="rounded-full"
                   onClick={() => {
                     const win = window.open(whatsappUrl, "_blank");
                     if (!win) {
@@ -428,34 +524,25 @@ function BookingPage() {
                       }
                     }
                   }}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-soft transition-all hover:bg-primary/90"
                 >
                   Enviar confirmação pelo WhatsApp
-                </button>
-              )}
-
-              <div className="mt-3">
-                <Button variant="outline" size="sm" onClick={() => downloadIcs(confirmed)}>
-                  Adicionar ao calendário
                 </Button>
-              </div>
-
+              )}
               <Button
-                variant="ghost"
-                size="sm"
-                className="mt-2"
-                onClick={() => {
-                  setConfirmed(null);
-                }}
+                variant="outline"
+                className="rounded-full"
+                onClick={() => downloadIcs(confirmed)}
               >
-                Fazer novo agendamento
+                Adicionar ao calendário
               </Button>
             </div>
-          )}
+            <Button variant="ghost" size="sm" className="mt-4" onClick={() => setConfirmed(null)}>
+              Fazer novo agendamento
+            </Button>
+          </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      )}
+    </SiteLayout>
   );
 }
 

@@ -12,7 +12,9 @@ describe("themeToCss", () => {
 
   it("todos os presets geram o mesmo conjunto de variáveis", () => {
     const keys = (preset: keyof typeof THEME_PRESETS) =>
-      [...themeToCss(resolveTheme({ preset })).matchAll(/(--[a-z0-9-]+):/g)].map((m) => m[1]).sort();
+      [...themeToCss(resolveTheme({ preset })).matchAll(/(--[a-z0-9-]+):/g)]
+        .map((m) => m[1])
+        .sort();
     const base = keys("rose");
     for (const preset of Object.keys(THEME_PRESETS) as (keyof typeof THEME_PRESETS)[]) {
       expect(keys(preset)).toEqual(base);
@@ -44,7 +46,9 @@ describe("themeToCss", () => {
   });
 
   it("não ataca com CSS vindo da configuração", () => {
-    const css = themeToCss(resolveTheme({ preset: "rose", fontHeading: 'Evil"; } body{display:none' }));
+    const css = themeToCss(
+      resolveTheme({ preset: "rose", fontHeading: 'Evil"; } body{display:none' }),
+    );
     expect(css).not.toContain("body{display:none");
   });
 });

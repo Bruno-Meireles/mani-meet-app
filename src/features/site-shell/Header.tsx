@@ -10,7 +10,8 @@ const navItems = [
   { to: "/meus-agendamentos", label: "Meus agendamentos" },
 ] as const;
 
-const linkClass = "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
+const linkClass =
+  "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
 
 function Brand() {
   return (

@@ -27,11 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClientsTab } from "@/features/admin/ClientsTab";
 import { ServicesTab } from "@/features/admin/ServicesTab";
 import { ScheduleTab } from "@/features/admin/ScheduleTab";
-import {
-  listAppointments,
-  updateAppointment,
-  deleteAppointment,
-} from "@/actions/admin.functions";
+import { listAppointments, updateAppointment, deleteAppointment } from "@/actions/admin.functions";
 import { formatDateBR, formatTime } from "@/shared/format";
 import type { AppointmentStatus } from "@/domain/appointments/schemas";
 import { toast } from "sonner";

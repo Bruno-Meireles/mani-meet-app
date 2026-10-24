@@ -83,6 +83,7 @@ export class InMemoryGateway implements BookingGateway {
 
   async reschedule(id: string, date: string, time: string) {
     const row = this.rows.find((r) => r.id === id);
-    if (row) Object.assign(row, { appointment_date: date, appointment_time: time, status: "scheduled" });
+    if (row)
+      Object.assign(row, { appointment_date: date, appointment_time: time, status: "scheduled" });
   }
 }
