@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClientsTab } from "@/components/admin/ClientsTab";
 import { ServicesTab } from "@/components/admin/ServicesTab";
+import { ScheduleTab } from "@/components/admin/ScheduleTab";
 import {
   listAppointments,
   updateAppointment,
@@ -158,6 +159,9 @@ function AdminPage() {
               </TabsTrigger>
               <TabsTrigger value="servicos" className="flex-1 sm:flex-none">
                 Serviços
+              </TabsTrigger>
+              <TabsTrigger value="horarios" className="flex-1 sm:flex-none">
+                Horários
               </TabsTrigger>
             </TabsList>
 
@@ -325,6 +329,10 @@ function AdminPage() {
 
             <TabsContent value="servicos">
               <ServicesTab />
+            </TabsContent>
+
+            <TabsContent value="horarios">
+              <ScheduleTab />
             </TabsContent>
           </Tabs>
         </div>

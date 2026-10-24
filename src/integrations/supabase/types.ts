@@ -8,6 +8,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      blocked_dates: {
+        Row: { blocked_date: string; created_at: string; reason: string | null };
+        Insert: { blocked_date: string; created_at?: string; reason?: string | null };
+        Update: { blocked_date?: string; created_at?: string; reason?: string | null };
+        Relationships: [];
+      };
+      business_hours: {
+        Row: {
+          break_end: string | null;
+          break_start: string | null;
+          close_time: string;
+          is_open: boolean;
+          open_time: string;
+          updated_at: string;
+          weekday: number;
+        };
+        Insert: {
+          break_end?: string | null;
+          break_start?: string | null;
+          close_time?: string;
+          is_open?: boolean;
+          open_time?: string;
+          updated_at?: string;
+          weekday: number;
+        };
+        Update: {
+          break_end?: string | null;
+          break_start?: string | null;
+          close_time?: string;
+          is_open?: boolean;
+          open_time?: string;
+          updated_at?: string;
+          weekday?: number;
+        };
+        Relationships: [];
+      };
       appointments: {
         Row: {
           appointment_date: string;

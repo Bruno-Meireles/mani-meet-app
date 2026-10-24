@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -22,7 +22,9 @@ import {
   createAppointment,
   getProfile,
 } from "@/lib/appointments.functions";
-import { formatCurrency, generateAllSlots } from "@/lib/appointments.utils";
+import { formatCurrency } from "@/lib/appointments.utils";
+import { generateAllSlots } from "@/lib/availability";
+import { useSchedule } from "@/lib/use-schedule";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -68,25 +70,29 @@ function BookingPage() {
     queryFn: () => listServicesFn(),
   });
 
+  const { hours, isDateDisabled } = useSchedule();
+  const selectedDateKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined;
+
   const { data: slots = [] } = useQuery({
-    queryKey: ["slots", selectedDate?.toISOString().slice(0, 10), selectedService],
+    queryKey: ["slots", selectedDateKey, selectedService],
     queryFn: () =>
       getSlotsFn({
         data: {
-          date: selectedDate!.toISOString().slice(0, 10),
+          date: selectedDateKey!,
           serviceId: selectedService,
         },
       }),
-    enabled: !!selectedDate && !!selectedService,
+    enabled: !!selectedDateKey && !!selectedService,
   });
 
   const selectedServiceData = services.find((s) => s.id === selectedService);
   const allSlots =
-    selectedDate && selectedService
-      ? generateAllSlots(
-          selectedDate.toISOString().slice(0, 10),
-          selectedServiceData?.duration_minutes ?? 30,
-        )
+    selectedDateKey && selectedService
+      ? generateAllSlots({
+          date: selectedDateKey,
+          durationMinutes: selectedServiceData?.duration_minutes ?? 30,
+          hours,
+        })
       : [];
 
   const {
@@ -145,8 +151,7 @@ function BookingPage() {
       toast.error(msg);
       // If the error indicates the slot is no longer available, refresh slots and clear selection
       if (typeof msg === "string" && msg.includes("Horário não disponível")) {
-        const dateKey =
-          appointmentDate || (selectedDate ? selectedDate.toISOString().slice(0, 10) : undefined);
+        const dateKey = appointmentDate || selectedDateKey;
         // Invalidate and refetch the exact slots query so UI updates immediately
         if (dateKey && selectedService) {
           queryClient.invalidateQueries({ queryKey: ["slots", dateKey, selectedService] });
@@ -285,7 +290,7 @@ function BookingPage() {
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
-                    disabled={(date) => date < addDays(new Date(), -1)}
+                    disabled={isDateDisabled}
                     locale={ptBR}
                   />
                 </div>

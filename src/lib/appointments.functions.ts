@@ -5,7 +5,8 @@ import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createAppointmentSchema, updateAppointmentSchema } from "./appointments.schemas";
 import { siteConfig } from "@/config/site";
-import { generateTimeSlots, CLIENT_CHANGE_MIN_HOURS } from "./appointments.utils";
+import { CLIENT_CHANGE_MIN_HOURS } from "./appointments.utils";
+import { DEFAULT_HOURS, computeSlots, nowInTimezone, type DayHours } from "./availability";
 import type { Service, Appointment } from "./appointments.schemas";
 
 function createPublicClient() {
@@ -37,6 +38,36 @@ function todayInSalonTz(offsetDays = 0) {
 /** Instante de início do atendimento (Brasil sem horário de verão desde 2019: UTC-3). */
 function appointmentStart(date: string, time: string) {
   return new Date(`${date}T${time.slice(0, 5)}:00-03:00`);
+}
+
+type Schedule = { hours: DayHours[]; blockedDates: string[] };
+
+/** Horários de funcionamento e folgas; usa o padrão se o salão ainda não configurou. */
+async function loadSchedule(supabase: ReturnType<typeof createPublicClient>): Promise<Schedule> {
+  const [hoursRes, blockedRes] = await Promise.all([
+    supabase.from("business_hours").select("*"),
+    supabase.from("blocked_dates").select("blocked_date"),
+  ]);
+  if (hoursRes.error) console.error("business_hours:", hoursRes.error.message);
+  if (blockedRes.error) console.error("blocked_dates:", blockedRes.error.message);
+  const hours: DayHours[] = hoursRes.data?.length ? hoursRes.data : DEFAULT_HOURS;
+  return { hours, blockedDates: (blockedRes.data ?? []).map((b) => b.blocked_date) };
+}
+
+function availableSlots(
+  date: string,
+  durationMinutes: number,
+  schedule: Schedule,
+  booked: { appointment_time: string; duration_minutes: number }[],
+) {
+  return computeSlots({
+    date,
+    durationMinutes,
+    hours: schedule.hours,
+    blockedDates: schedule.blockedDates,
+    booked,
+    now: nowInTimezone(SALON_TZ),
+  });
 }
 
 async function isAdmin(supabase: ReturnType<typeof createPublicClient>, userId: string) {
@@ -88,9 +119,12 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
       duration_minutes: (b.services as unknown as { duration_minutes: number }).duration_minutes,
     }));
 
-    const slots = generateTimeSlots(data.date, service.duration_minutes, bookedSlots);
-
-    return slots;
+    return availableSlots(
+      data.date,
+      service.duration_minutes,
+      await loadSchedule(supabase),
+      bookedSlots,
+    );
   });
 
 export const getAppointmentsByPhone = createServerFn({ method: "POST" })
@@ -138,7 +172,12 @@ export const createAppointment = createServerFn({ method: "POST" })
       duration_minutes: (b.services as unknown as { duration_minutes: number }).duration_minutes,
     }));
 
-    const slots = generateTimeSlots(data.appointment_date, service.duration_minutes, bookedSlots);
+    const slots = availableSlots(
+      data.appointment_date,
+      service.duration_minutes,
+      await loadSchedule(supabase),
+      bookedSlots,
+    );
 
     if (!slots.includes(data.appointment_time)) {
       throw new Error("Horário não está mais disponível");
@@ -264,6 +303,108 @@ export const getProfile = createServerFn({ method: "GET" }).handler(async () => 
   if (error) return null;
   return data;
 });
+
+// ---------- Horários e folgas ----------
+
+/** Público: o fluxo de agendamento usa isto para desabilitar dias fechados/bloqueados. */
+export const getSchedule = createServerFn({ method: "GET" }).handler(async () => {
+  return loadSchedule(createPublicClient());
+});
+
+const timeSchema = z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Horário inválido");
+
+const saveBusinessHoursSchema = z.object({
+  hours: z
+    .array(
+      z
+        .object({
+          weekday: z.number().int().min(0).max(6),
+          is_open: z.boolean(),
+          open_time: timeSchema,
+          close_time: timeSchema,
+          break_start: timeSchema.nullable(),
+          break_end: timeSchema.nullable(),
+        })
+        .refine(
+          (h) => !h.is_open || h.close_time > h.open_time,
+          "Fechamento deve ser após a abertura",
+        )
+        .refine(
+          (h) => (h.break_start === null) === (h.break_end === null),
+          "Informe início e fim do intervalo",
+        )
+        .refine(
+          (h) => h.break_start === null || (h.break_end as string) > h.break_start,
+          "Fim do intervalo deve ser após o início",
+        ),
+    )
+    .length(7),
+});
+
+export const saveBusinessHours = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) => saveBusinessHoursSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { error } = await context.supabase
+      .from("business_hours")
+      .upsert(data.hours.map((h) => ({ ...h, updated_at: new Date().toISOString() })));
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+const blockedDateSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  reason: z.string().max(120).optional(),
+});
+
+export const addBlockedDate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) => blockedDateSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { error } = await context.supabase
+      .from("blocked_dates")
+      .upsert({ blocked_date: data.date, reason: data.reason || null });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const removeBlockedDate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const { error } = await context.supabase
+      .from("blocked_dates")
+      .delete()
+      .eq("blocked_date", data.date);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+/** Admin: horários e folgas com motivo (para a tela de configuração). */
+export const getScheduleAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isAdmin(context.supabase, context.userId))) throw new Error("Forbidden");
+    const [hours, blocked] = await Promise.all([
+      context.supabase.from("business_hours").select("*").order("weekday"),
+      context.supabase
+        .from("blocked_dates")
+        .select("*")
+        .gte("blocked_date", todayInSalonTz())
+        .order("blocked_date"),
+    ]);
+    if (hours.error) throw new Error(hours.error.message);
+    if (blocked.error) throw new Error(blocked.error.message);
+    return {
+      hours: hours.data?.length ? hours.data : DEFAULT_HOURS,
+      blocked: blocked.data ?? [],
+    };
+  });
 
 // ---------- Clients ----------
 
@@ -449,7 +590,8 @@ export const rescheduleMyAppointment = createServerFn({ method: "POST" })
       appointment_time: b.appointment_time,
       duration_minutes: (b.services as unknown as { duration_minutes: number }).duration_minutes,
     }));
-    if (!generateTimeSlots(data.date, duration, bookedSlots).includes(data.time)) {
+    const schedule = await loadSchedule(supabaseAdmin);
+    if (!availableSlots(data.date, duration, schedule, bookedSlots).includes(data.time)) {
       throw new Error("Horário não está mais disponível");
     }
 

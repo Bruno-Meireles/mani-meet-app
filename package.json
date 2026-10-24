@@ -12,6 +12,7 @@
     "deploy:cloudflare": "npm run build && wrangler deploy --config .output/server/wrangler.json",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "format": "prettier --write ."
   },
   "overrides": {
@@ -90,6 +91,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
+    "vitest": "^3.2.7",
     "wrangler": "^4.40.0"
   }
 }

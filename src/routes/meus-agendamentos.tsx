@@ -1,4 +1,4 @@
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { pageMeta } from "@/config/site";
+import { useSchedule } from "@/lib/use-schedule";
 import { useServerFn } from "@tanstack/react-start";
 import {
   getAppointmentsByPhone,
@@ -72,6 +73,7 @@ function RescheduleDialog({
   const getSlots = useServerFn(getAvailableSlots);
   const reschedule = useServerFn(rescheduleMyAppointment);
   const dateKey = date ? format(date, "yyyy-MM-dd") : "";
+  const { isDateDisabled } = useSchedule();
 
   const { data: slots = [], isFetching } = useQuery({
     queryKey: ["reschedule-slots", dateKey, appointment?.service_id],
@@ -107,7 +109,7 @@ function RescheduleDialog({
               setDate(d);
               setTime("");
             }}
-            disabled={(d) => d < addDays(new Date(), -1)}
+            disabled={isDateDisabled}
             locale={ptBR}
           />
         </div>
