@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { format } from "date-fns";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { addDays, format, startOfToday } from "date-fns";
+import { useSearch } from "@tanstack/react-router";
+import { PrototypeSwitcher } from "./PrototypeSwitcher";
 import { ptBR } from "date-fns/locale";
 import { Check, Clock } from "lucide-react";
 import { SiteLayout } from "@/features/site-shell/SiteLayout";
@@ -63,6 +65,7 @@ function BookingPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedService, setSelectedService] = useState<string>("");
+  const [step, setStep] = useState(1);
   const [confirmed, setConfirmed] = useState<{
     clientName: string;
     serviceName: string;
@@ -95,15 +98,25 @@ function BookingPage() {
     queryFn: () => getProfileFn(),
   });
 
-  const { data: services = [] } = useQuery({
+  const { data: servicesData = [] } = useQuery({
     queryKey: ["services"],
     queryFn: () => listServicesFn(),
   });
+  // PROTOTYPE: dados de exemplo só em dev e só quando o banco não responde
+  const services = (
+    import.meta.env.DEV && servicesData.length === 0
+      ? [
+          { id: "d1", name: "Esmaltação em gel", description: "Cores à escolha, dura até 3 semanas.", duration_minutes: 60, price: 90 },
+          { id: "d2", name: "Manicure completa", description: "Cutilagem, hidratação e esmaltação.", duration_minutes: 45, price: 45 },
+          { id: "d3", name: "Alongamento em gel", description: "Molde F1, com acabamento.", duration_minutes: 120, price: 180 },
+        ]
+      : servicesData
+  ) as typeof servicesData;
 
   const { hours, isDateDisabled } = useSchedule();
   const selectedDateKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined;
 
-  const { data: slots = [] } = useQuery({
+  const { data: slotsData = [] } = useQuery({
     queryKey: ["slots", selectedDateKey, selectedService],
     queryFn: () =>
       getSlotsFn({
@@ -124,6 +137,10 @@ function BookingPage() {
           hours,
         })
       : [];
+  const slots =
+    import.meta.env.DEV && servicesData.length === 0
+      ? allSlots.filter((_, i) => i % 4 !== 1)
+      : slotsData;
 
   const {
     register,
@@ -175,6 +192,7 @@ function BookingPage() {
       reset();
       setSelectedDate(undefined);
       setSelectedService("");
+      setStep(1);
       queryClient.invalidateQueries({ queryKey: ["slots"] });
       // Do not auto-open WhatsApp. The confirmation button handles opening via user gesture.
     },
@@ -241,10 +259,455 @@ function BookingPage() {
   };
 
   const chosenService = services.find((x) => x.id === selectedService);
+  // PROTOTYPE (throwaway): três variações da tela, trocadas por ?variant=A|B|C. Veja PrototypeSwitcher.
+  const search = useSearch({ from: "/agendar" });
+  const variant = search.variant ?? "A";
+  const days = useMemo(() => Array.from({ length: 21 }, (_, i) => addDays(startOfToday(), i)), []);
+
   const formId = "booking-form";
   const stepTitle = "flex items-center gap-3 font-serif text-xl font-semibold";
   const stepBadge =
     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground";
+  const card = "rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8";
+
+  const serviceField = (
+    <div>
+      <Label htmlFor="service-select" className="sr-only">
+        Serviço
+      </Label>
+      <Select value={selectedService} onValueChange={handleServiceChange}>
+        <SelectTrigger id="service-select" className="h-12 rounded-xl text-base">
+          <SelectValue placeholder="Selecione um serviço" />
+        </SelectTrigger>
+        <SelectContent>
+          {services.map((service) => (
+            <SelectItem key={service.id} value={service.id}>
+              {service.name} · {service.duration_minutes} min · {formatCurrency(service.price)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {chosenService && (
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" aria-hidden /> {chosenService.duration_minutes} min
+          </span>
+          <span className="font-semibold text-foreground">
+            {formatCurrency(chosenService.price)}
+          </span>
+          {chosenService.description && <span>{chosenService.description}</span>}
+        </p>
+      )}
+      {errors.service_id && (
+        <p className="mt-3 text-xs text-destructive">{errors.service_id.message}</p>
+      )}
+    </div>
+  );
+
+  const calendarBlock = (
+    <div>
+      <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-1 sm:p-3">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={handleDateSelect}
+          disabled={isDateDisabled}
+          locale={ptBR}
+        />
+      </div>
+      {errors.appointment_date && (
+        <p className="mt-2 text-xs text-destructive">{errors.appointment_date.message}</p>
+      )}
+    </div>
+  );
+
+  const slotButtons = (
+    <>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {allSlots.map((slot) => {
+          const isAvailable = slots.includes(slot);
+          return (
+            <button
+              key={slot}
+              type="button"
+              onClick={() => isAvailable && setValue("appointment_time", slot)}
+              className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
+                appointmentTime === slot
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : isAvailable
+                    ? "border-border bg-background hover:border-primary/50 hover:bg-accent"
+                    : "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-50"
+              }`}
+              disabled={!isAvailable}
+              aria-pressed={appointmentTime === slot}
+              title={isAvailable ? "Selecionar horário" : "Horário indisponível"}
+            >
+              {slot}
+            </button>
+          );
+        })}
+      </div>
+      {slots.length === 0 && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Nenhum horário livre nesta data. Tente outro dia.
+        </p>
+      )}
+      {errors.appointment_time && (
+        <p className="mt-2 text-xs text-destructive">{errors.appointment_time.message}</p>
+      )}
+    </>
+  );
+
+  const slotsBlock =
+    selectedDate && selectedService ? (
+      <div>
+        <p className="mb-3 text-sm font-medium capitalize">
+          {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+        </p>
+        {slotButtons}
+      </div>
+    ) : (
+      <div className="flex h-full min-h-40 items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        Escolha um serviço e um dia para ver os horários livres.
+      </div>
+    );
+
+  const dataFields = (
+    <div className="grid gap-5 md:grid-cols-2">
+      <div className="space-y-2">
+        <Label htmlFor="client_name">Nome completo</Label>
+        <Input
+          id="client_name"
+          placeholder="Seu nome"
+          autoComplete="name"
+          {...register("client_name")}
+        />
+        {errors.client_name && (
+          <p className="text-xs text-destructive">{errors.client_name.message}</p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
+        <Input
+          id="client_phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="(11) 99999-9999"
+          {...register("client_phone")}
+        />
+        {errors.client_phone && (
+          <p className="text-xs text-destructive">{errors.client_phone.message}</p>
+        )}
+      </div>
+      <div className="space-y-2 md:col-span-2">
+        <Label htmlFor="client_email">E-mail (opcional, para receber o lembrete)</Label>
+        <Input
+          id="client_email"
+          type="email"
+          autoComplete="email"
+          placeholder="seu@email.com"
+          {...register("client_email")}
+        />
+        {errors.client_email && (
+          <p className="text-xs text-destructive">{errors.client_email.message}</p>
+        )}
+      </div>
+      <div className="space-y-2 md:col-span-2">
+        <Label htmlFor="notes">Observações (opcional)</Label>
+        <Input
+          id="notes"
+          placeholder="Alguma preferência ou informação extra"
+          {...register("notes")}
+        />
+      </div>
+    </div>
+  );
+
+  const confirmLabel = mutation.isPending ? "Confirmando..." : "Confirmar agendamento";
+  const summaryLine = [
+    selectedServiceData?.name,
+    selectedDate
+      ? `${format(selectedDate, "dd/MM")}${appointmentTime ? ` às ${appointmentTime}` : ""}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const variantA = (
+    <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[1fr_22rem]">
+      <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
+        <input type="hidden" {...register("service_id")} />
+        <section className={card}>
+          <h2 className={stepTitle}>
+            <span className={stepBadge}>1</span> Escolha o serviço
+          </h2>
+          <div className="mt-5">{serviceField}</div>
+        </section>
+        <section className={card}>
+          <h2 className={stepTitle}>
+            <span className={stepBadge}>2</span> Dia e horário
+          </h2>
+          <div className="mt-6 grid gap-8 md:grid-cols-2">
+            {calendarBlock}
+            {slotsBlock}
+          </div>
+        </section>
+        <section className={card}>
+          <h2 className={stepTitle}>
+            <span className={stepBadge}>3</span> Seus dados
+          </h2>
+          <div className="mt-6">{dataFields}</div>
+        </section>
+        <div className="lg:hidden">
+          <Button
+            type="submit"
+            className="w-full rounded-full"
+            size="lg"
+            disabled={isSubmitting || mutation.isPending || !canSubmit}
+          >
+            {confirmLabel}
+          </Button>
+          {!canSubmit && (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Escolha serviço, dia e horário para confirmar.
+            </p>
+          )}
+        </div>
+      </form>
+
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft">
+          <h2 className="font-serif text-xl font-semibold">Resumo</h2>
+          <dl className="mt-5 space-y-4 text-sm">
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">Serviço</dt>
+              <dd className="mt-1 font-medium">{selectedServiceData?.name ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                Data e hora
+              </dt>
+              <dd className="mt-1 font-medium">
+                {selectedDate
+                  ? `${format(selectedDate, "dd/MM/yyyy")}${appointmentTime ? ` às ${appointmentTime}` : ""}`
+                  : "—"}
+              </dd>
+            </div>
+            <div className="flex items-end justify-between border-t border-border/60 pt-4">
+              <div>
+                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Duração</dt>
+                <dd className="mt-1 font-medium">
+                  {selectedServiceData ? `${selectedServiceData.duration_minutes} min` : "—"}
+                </dd>
+              </div>
+              <div className="text-right">
+                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Valor</dt>
+                <dd className="mt-1 font-serif text-2xl font-semibold text-primary">
+                  {selectedServiceData ? formatCurrency(selectedServiceData.price) : "—"}
+                </dd>
+              </div>
+            </div>
+          </dl>
+          <Button
+            type="submit"
+            form={formId}
+            className="mt-6 hidden w-full rounded-full lg:inline-flex"
+            size="lg"
+            disabled={isSubmitting || mutation.isPending || !canSubmit}
+          >
+            {confirmLabel}
+          </Button>
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+            Você pode remarcar ou cancelar em “Meus agendamentos” com até {CLIENT_CHANGE_MIN_HOURS}{" "}
+            horas de antecedência.
+          </p>
+        </div>
+      </aside>
+    </div>
+  );
+
+  const wizardSteps = ["Serviço", "Dia e horário", "Seus dados"];
+  const stepReady = [!!selectedService, canSubmit, true];
+  const variantB = (
+    <div className="mx-auto max-w-2xl px-6 py-10">
+      <form id={formId} onSubmit={handleSubmit(onSubmit)} noValidate>
+        <input type="hidden" {...register("service_id")} />
+        <ol className="flex items-center gap-2" aria-label="Etapas">
+          {wizardSteps.map((label, i) => (
+            <li key={label} className="flex flex-1 flex-col gap-2">
+              <span
+                className={`h-1.5 rounded-full ${i + 1 <= step ? "bg-primary" : "bg-border"}`}
+                aria-hidden
+              />
+              <span
+                className={`text-xs ${i + 1 === step ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+                aria-current={i + 1 === step ? "step" : undefined}
+              >
+                {i + 1}. {label}
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        {summaryLine && (
+          <p className="mt-4 rounded-full bg-secondary/70 px-4 py-2 text-center text-xs text-foreground">
+            {summaryLine}
+            {selectedServiceData ? ` · ${formatCurrency(selectedServiceData.price)}` : ""}
+          </p>
+        )}
+
+        <div className={`${card} mt-4`}>
+          {step === 1 && (
+            <>
+              <h2 className={stepTitle}>Qual serviço você quer?</h2>
+              <div className="mt-5">{serviceField}</div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <h2 className={stepTitle}>Quando fica bom pra você?</h2>
+              <div className="mt-5 space-y-6">
+                {calendarBlock}
+                {slotsBlock}
+              </div>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <h2 className={stepTitle}>Para quem é o horário?</h2>
+              <div className="mt-5">{dataFields}</div>
+            </>
+          )}
+          <div className="mt-8 flex items-center justify-between gap-3">
+            {step > 1 ? (
+              <Button type="button" variant="ghost" onClick={() => setStep(step - 1)}>
+                Voltar
+              </Button>
+            ) : (
+              <span />
+            )}
+            {step < 3 ? (
+              <Button
+                type="button"
+                className="rounded-full px-8"
+                disabled={!stepReady[step - 1]}
+                onClick={() => setStep(step + 1)}
+              >
+                Continuar
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                className="rounded-full px-8"
+                disabled={isSubmitting || mutation.isPending || !canSubmit}
+              >
+                {confirmLabel}
+              </Button>
+            )}
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+
+  const variantC = (
+    <div className="mx-auto max-w-3xl px-6 py-10 pb-32">
+      <form id={formId} onSubmit={handleSubmit(onSubmit)} noValidate>
+        <input type="hidden" {...register("service_id")} />
+        <div className={`${card} space-y-8`}>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Serviço
+            </h2>
+            {serviceField}
+          </section>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Dia
+            </h2>
+            <div
+              role="group"
+              aria-label="Dia"
+              className="-mx-2 flex snap-x gap-2 overflow-x-auto px-2 pb-2"
+            >
+              {days.map((d) => {
+                const disabled = isDateDisabled(d);
+                const active = !!selectedDate && format(d, "yyyy-MM-dd") === selectedDateKey;
+                return (
+                  <button
+                    key={d.toISOString()}
+                    type="button"
+                    disabled={disabled}
+                    aria-pressed={active}
+                    onClick={() => handleDateSelect(d)}
+                    className={`flex w-16 shrink-0 snap-start flex-col items-center rounded-2xl border px-2 py-3 transition-colors ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : disabled
+                          ? "cursor-not-allowed border-border bg-muted text-muted-foreground opacity-50"
+                          : "border-border bg-background hover:border-primary/50 hover:bg-accent"
+                    }`}
+                  >
+                    <span className="text-[11px] uppercase">
+                      {format(d, "EEE", { locale: ptBR })}
+                    </span>
+                    <span className="font-serif text-2xl font-semibold leading-tight">
+                      {format(d, "dd")}
+                    </span>
+                    <span className="text-[11px] uppercase">
+                      {format(d, "MMM", { locale: ptBR })}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {errors.appointment_date && (
+              <p className="mt-2 text-xs text-destructive">{errors.appointment_date.message}</p>
+            )}
+          </section>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Horário
+            </h2>
+            {selectedDate && selectedService ? (
+              slotButtons
+            ) : (
+              <p className="rounded-2xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+                Escolha um serviço e um dia para ver os horários livres.
+              </p>
+            )}
+          </section>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Seus dados
+            </h2>
+            {dataFields}
+          </section>
+        </div>
+      </form>
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 p-3 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm">
+            {summaryLine || "Escolha serviço, dia e horário"}
+            {selectedServiceData && (
+              <span className="ml-2 font-semibold text-primary">
+                {formatCurrency(selectedServiceData.price)}
+              </span>
+            )}
+          </p>
+          <Button
+            type="submit"
+            form={formId}
+            className="shrink-0 rounded-full px-6"
+            disabled={isSubmitting || mutation.isPending || !canSubmit}
+          >
+            {mutation.isPending ? "Confirmando..." : "Confirmar"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <SiteLayout showActionBar={false}>
@@ -260,239 +723,15 @@ function BookingPage() {
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[1fr_22rem]">
-        <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
-          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
-            <h2 className={stepTitle}>
-              <span className={stepBadge}>1</span> Escolha o serviço
-            </h2>
-            <input type="hidden" {...register("service_id")} />
-            <div className="mt-5">
-              <Label htmlFor="service-select" className="sr-only">
-                Serviço
-              </Label>
-              <Select value={selectedService} onValueChange={handleServiceChange}>
-                <SelectTrigger id="service-select" className="h-12 rounded-xl text-base">
-                  <SelectValue placeholder="Selecione um serviço" />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name} · {service.duration_minutes} min ·{" "}
-                      {formatCurrency(service.price)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {chosenService && (
-                <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" aria-hidden /> {chosenService.duration_minutes}{" "}
-                    min
-                  </span>
-                  <span className="font-semibold text-foreground">
-                    {formatCurrency(chosenService.price)}
-                  </span>
-                  {chosenService.description && <span>{chosenService.description}</span>}
-                </p>
-              )}
-            </div>
-            {errors.service_id && (
-              <p className="mt-3 text-xs text-destructive">{errors.service_id.message}</p>
-            )}
-          </section>
-
-          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
-            <h2 className={stepTitle}>
-              <span className={stepBadge}>2</span> Dia e horário
-            </h2>
-            <div className="mt-6 grid gap-8 md:grid-cols-2">
-              <div>
-                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-1 sm:p-3">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={handleDateSelect}
-                    disabled={isDateDisabled}
-                    locale={ptBR}
-                  />
-                </div>
-                {errors.appointment_date && (
-                  <p className="mt-2 text-xs text-destructive">{errors.appointment_date.message}</p>
-                )}
-              </div>
-
-              <div>
-                {selectedDate && selectedService ? (
-                  <>
-                    <p className="mb-3 text-sm font-medium capitalize">
-                      {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
-                    </p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {allSlots.map((slot) => {
-                        const isAvailable = slots.includes(slot);
-                        return (
-                          <button
-                            key={slot}
-                            type="button"
-                            onClick={() => isAvailable && setValue("appointment_time", slot)}
-                            className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
-                              appointmentTime === slot
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : isAvailable
-                                  ? "border-border bg-background hover:border-primary/50 hover:bg-accent"
-                                  : "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-50"
-                            }`}
-                            disabled={!isAvailable}
-                            aria-pressed={appointmentTime === slot}
-                            title={isAvailable ? "Selecionar horário" : "Horário indisponível"}
-                          >
-                            {slot}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {slots.length === 0 && (
-                      <p className="mt-3 text-sm text-muted-foreground">
-                        Nenhum horário livre nesta data. Tente outro dia.
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex h-full min-h-40 items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                    Escolha um serviço e um dia para ver os horários livres.
-                  </div>
-                )}
-                {errors.appointment_time && (
-                  <p className="mt-2 text-xs text-destructive">{errors.appointment_time.message}</p>
-                )}
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
-            <h2 className={stepTitle}>
-              <span className={stepBadge}>3</span> Seus dados
-            </h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="client_name">Nome completo</Label>
-                <Input
-                  id="client_name"
-                  placeholder="Seu nome"
-                  autoComplete="name"
-                  {...register("client_name")}
-                />
-                {errors.client_name && (
-                  <p className="text-xs text-destructive">{errors.client_name.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
-                <Input
-                  id="client_phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="(11) 99999-9999"
-                  {...register("client_phone")}
-                />
-                {errors.client_phone && (
-                  <p className="text-xs text-destructive">{errors.client_phone.message}</p>
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="client_email">E-mail (opcional, para receber o lembrete)</Label>
-                <Input
-                  id="client_email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="seu@email.com"
-                  {...register("client_email")}
-                />
-                {errors.client_email && (
-                  <p className="text-xs text-destructive">{errors.client_email.message}</p>
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes">Observações (opcional)</Label>
-                <Input
-                  id="notes"
-                  placeholder="Alguma preferência ou informação extra"
-                  {...register("notes")}
-                />
-              </div>
-            </div>
-          </section>
-
-          <div className="lg:hidden">
-            <Button
-              type="submit"
-              className="w-full rounded-full"
-              size="lg"
-              disabled={isSubmitting || mutation.isPending || !canSubmit}
-            >
-              {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
-            </Button>
-            {!canSubmit && (
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                Escolha serviço, dia e horário para confirmar.
-              </p>
-            )}
-          </div>
-        </form>
-
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft">
-            <h2 className="font-serif text-xl font-semibold">Resumo</h2>
-            <dl className="mt-5 space-y-4 text-sm">
-              <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Serviço</dt>
-                <dd className="mt-1 font-medium">{selectedServiceData?.name ?? "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Data e hora
-                </dt>
-                <dd className="mt-1 font-medium">
-                  {selectedDate
-                    ? `${format(selectedDate, "dd/MM/yyyy")}${appointmentTime ? ` às ${appointmentTime}` : ""}`
-                    : "—"}
-                </dd>
-              </div>
-              <div className="flex items-end justify-between border-t border-border/60 pt-4">
-                <div>
-                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Duração
-                  </dt>
-                  <dd className="mt-1 font-medium">
-                    {selectedServiceData ? `${selectedServiceData.duration_minutes} min` : "—"}
-                  </dd>
-                </div>
-                <div className="text-right">
-                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">Valor</dt>
-                  <dd className="mt-1 font-serif text-2xl font-semibold text-primary">
-                    {selectedServiceData ? formatCurrency(selectedServiceData.price) : "—"}
-                  </dd>
-                </div>
-              </div>
-            </dl>
-            <Button
-              type="submit"
-              form={formId}
-              className="mt-6 hidden w-full rounded-full lg:inline-flex"
-              size="lg"
-              disabled={isSubmitting || mutation.isPending || !canSubmit}
-            >
-              {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
-            </Button>
-            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Você pode remarcar ou cancelar em “Meus agendamentos” com até{" "}
-              {CLIENT_CHANGE_MIN_HOURS} horas de antecedência.
-            </p>
-          </div>
-        </aside>
-      </div>
+      {variant === "B" ? variantB : variant === "C" ? variantC : variantA}
+      <PrototypeSwitcher
+        variants={[
+          { key: "A", name: "Cartões + resumo" },
+          { key: "B", name: "Passo a passo" },
+          { key: "C", name: "Faixa de dias + barra fixa" },
+        ]}
+        current={variant}
+      />
 
       {confirmed && (
         <div className="mx-auto max-w-3xl px-6 pb-16">

@@ -6,5 +6,9 @@ export const Route = createFileRoute("/agendar")({
   head: () => ({
     meta: pageMeta("Agendar", `Agende seu horário de manicure no ${siteConfig.name}.`),
   }),
+  validateSearch: (search: Record<string, unknown>): { variant?: "A" | "B" | "C" } =>
+    search["variant"] === "A" || search["variant"] === "B" || search["variant"] === "C"
+      ? { variant: search["variant"] }
+      : {},
   component: BookingPage,
 });
