@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { format } from "date-fns";
+import { addDays, format, startOfToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Check, Clock } from "lucide-react";
+import { CalendarDays, Check, Clock } from "lucide-react";
 import { SiteLayout } from "@/features/site-shell/SiteLayout";
 import { siteConfig, whatsappDigits } from "@/config/site";
 import { CLIENT_CHANGE_MIN_HOURS } from "@/domain/appointments/change-policy";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -63,6 +64,11 @@ function BookingPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedService, setSelectedService] = useState<string>("");
+  // Calculado no cliente: o servidor pode estar em outro fuso e mudar o "hoje" na hidratação.
+  const [days, setDays] = useState<Date[]>([]);
+  useEffect(() => {
+    setDays(Array.from({ length: 21 }, (_, i) => addDays(startOfToday(), i)));
+  }, []);
   const [confirmed, setConfirmed] = useState<{
     clientName: string;
     serviceName: string;
@@ -242,9 +248,17 @@ function BookingPage() {
 
   const chosenService = services.find((x) => x.id === selectedService);
   const formId = "booking-form";
-  const stepTitle = "flex items-center gap-3 font-serif text-xl font-semibold";
+  const stepTitle = "mb-3 flex items-center gap-2.5 font-serif text-lg font-semibold";
   const stepBadge =
-    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground";
+    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground";
+  const summaryLine = [
+    selectedServiceData?.name,
+    selectedDate
+      ? `${format(selectedDate, "dd/MM")}${appointmentTime ? ` às ${appointmentTime}` : ""}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <SiteLayout showActionBar={false}>
@@ -260,14 +274,14 @@ function BookingPage() {
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[1fr_22rem]">
-        <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
-          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
-            <h2 className={stepTitle}>
-              <span className={stepBadge}>1</span> Escolha o serviço
-            </h2>
-            <input type="hidden" {...register("service_id")} />
-            <div className="mt-5">
+      <div className="mx-auto max-w-3xl px-6 py-10 pb-32">
+        <form id={formId} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <input type="hidden" {...register("service_id")} />
+          <div className="space-y-8 rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
+            <section>
+              <h2 className={stepTitle}>
+                <span className={stepBadge}>1</span> Escolha o serviço
+              </h2>
               <Label htmlFor="service-select" className="sr-only">
                 Serviço
               </Label>
@@ -296,19 +310,59 @@ function BookingPage() {
                   {chosenService.description && <span>{chosenService.description}</span>}
                 </p>
               )}
-            </div>
-            {errors.service_id && (
-              <p className="mt-3 text-xs text-destructive">{errors.service_id.message}</p>
-            )}
-          </section>
+              {errors.service_id && (
+                <p className="mt-2 text-xs text-destructive">{errors.service_id.message}</p>
+              )}
+            </section>
 
-          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
-            <h2 className={stepTitle}>
-              <span className={stepBadge}>2</span> Dia e horário
-            </h2>
-            <div className="mt-6 grid gap-8 md:grid-cols-2">
-              <div>
-                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-1 sm:p-3">
+            <section>
+              <h2 className={stepTitle}>
+                <span className={stepBadge}>2</span> Dia e horário
+              </h2>
+              <div
+                role="group"
+                aria-label="Próximos dias"
+                className="-mx-2 flex snap-x gap-2 overflow-x-auto px-2 pb-2"
+              >
+                {days.map((d) => {
+                  const disabled = isDateDisabled(d);
+                  const active = !!selectedDate && format(d, "yyyy-MM-dd") === selectedDateKey;
+                  return (
+                    <button
+                      key={d.toISOString()}
+                      type="button"
+                      disabled={disabled}
+                      aria-pressed={active}
+                      aria-label={format(d, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                      onClick={() => handleDateSelect(d)}
+                      className={`flex w-16 shrink-0 snap-start flex-col items-center rounded-2xl border px-2 py-3 transition-colors ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : disabled
+                            ? "cursor-not-allowed border-border bg-muted text-muted-foreground opacity-50"
+                            : "border-border bg-background hover:border-primary/50 hover:bg-accent"
+                      }`}
+                    >
+                      <span className="text-[11px] uppercase">
+                        {format(d, "EEE", { locale: ptBR })}
+                      </span>
+                      <span className="font-serif text-2xl font-semibold leading-tight">
+                        {format(d, "dd")}
+                      </span>
+                      <span className="text-[11px] uppercase">
+                        {format(d, "MMM", { locale: ptBR })}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="sm" className="mt-1">
+                    <CalendarDays aria-hidden /> Outra data
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2" align="start">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -316,19 +370,19 @@ function BookingPage() {
                     disabled={isDateDisabled}
                     locale={ptBR}
                   />
-                </div>
-                {errors.appointment_date && (
-                  <p className="mt-2 text-xs text-destructive">{errors.appointment_date.message}</p>
-                )}
-              </div>
+                </PopoverContent>
+              </Popover>
+              {errors.appointment_date && (
+                <p className="mt-2 text-xs text-destructive">{errors.appointment_date.message}</p>
+              )}
 
-              <div>
+              <div className="mt-5">
                 {selectedDate && selectedService ? (
                   <>
                     <p className="mb-3 text-sm font-medium capitalize">
                       {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                     </p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                       {allSlots.map((slot) => {
                         const isAvailable = slots.includes(slot);
                         return (
@@ -359,139 +413,99 @@ function BookingPage() {
                     )}
                   </>
                 ) : (
-                  <div className="flex h-full min-h-40 items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                  <p className="rounded-2xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
                     Escolha um serviço e um dia para ver os horários livres.
-                  </div>
+                  </p>
                 )}
                 {errors.appointment_time && (
                   <p className="mt-2 text-xs text-destructive">{errors.appointment_time.message}</p>
                 )}
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
-            <h2 className={stepTitle}>
-              <span className={stepBadge}>3</span> Seus dados
-            </h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="client_name">Nome completo</Label>
-                <Input
-                  id="client_name"
-                  placeholder="Seu nome"
-                  autoComplete="name"
-                  {...register("client_name")}
-                />
-                {errors.client_name && (
-                  <p className="text-xs text-destructive">{errors.client_name.message}</p>
-                )}
+            <section>
+              <h2 className={stepTitle}>
+                <span className={stepBadge}>3</span> Seus dados
+              </h2>
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="client_name">Nome completo</Label>
+                  <Input
+                    id="client_name"
+                    placeholder="Seu nome"
+                    autoComplete="name"
+                    {...register("client_name")}
+                  />
+                  {errors.client_name && (
+                    <p className="text-xs text-destructive">{errors.client_name.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
+                  <Input
+                    id="client_phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="(11) 99999-9999"
+                    {...register("client_phone")}
+                  />
+                  {errors.client_phone && (
+                    <p className="text-xs text-destructive">{errors.client_phone.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="client_email">E-mail (opcional, para receber o lembrete)</Label>
+                  <Input
+                    id="client_email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="seu@email.com"
+                    {...register("client_email")}
+                  />
+                  {errors.client_email && (
+                    <p className="text-xs text-destructive">{errors.client_email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="notes">Observações (opcional)</Label>
+                  <Input
+                    id="notes"
+                    placeholder="Alguma preferência ou informação extra"
+                    {...register("notes")}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
-                <Input
-                  id="client_phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="(11) 99999-9999"
-                  {...register("client_phone")}
-                />
-                {errors.client_phone && (
-                  <p className="text-xs text-destructive">{errors.client_phone.message}</p>
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="client_email">E-mail (opcional, para receber o lembrete)</Label>
-                <Input
-                  id="client_email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="seu@email.com"
-                  {...register("client_email")}
-                />
-                {errors.client_email && (
-                  <p className="text-xs text-destructive">{errors.client_email.message}</p>
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes">Observações (opcional)</Label>
-                <Input
-                  id="notes"
-                  placeholder="Alguma preferência ou informação extra"
-                  {...register("notes")}
-                />
-              </div>
-            </div>
-          </section>
-
-          <div className="lg:hidden">
-            <Button
-              type="submit"
-              className="w-full rounded-full"
-              size="lg"
-              disabled={isSubmitting || mutation.isPending || !canSubmit}
-            >
-              {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
-            </Button>
-            {!canSubmit && (
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                Escolha serviço, dia e horário para confirmar.
+              <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+                Você pode remarcar ou cancelar em “Meus agendamentos” com até{" "}
+                {CLIENT_CHANGE_MIN_HOURS} horas de antecedência.
               </p>
-            )}
+            </section>
           </div>
         </form>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft">
-            <h2 className="font-serif text-xl font-semibold">Resumo</h2>
-            <dl className="mt-5 space-y-4 text-sm">
-              <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Serviço</dt>
-                <dd className="mt-1 font-medium">{selectedServiceData?.name ?? "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Data e hora
-                </dt>
-                <dd className="mt-1 font-medium">
-                  {selectedDate
-                    ? `${format(selectedDate, "dd/MM/yyyy")}${appointmentTime ? ` às ${appointmentTime}` : ""}`
-                    : "—"}
-                </dd>
-              </div>
-              <div className="flex items-end justify-between border-t border-border/60 pt-4">
-                <div>
-                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Duração
-                  </dt>
-                  <dd className="mt-1 font-medium">
-                    {selectedServiceData ? `${selectedServiceData.duration_minutes} min` : "—"}
-                  </dd>
-                </div>
-                <div className="text-right">
-                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">Valor</dt>
-                  <dd className="mt-1 font-serif text-2xl font-semibold text-primary">
-                    {selectedServiceData ? formatCurrency(selectedServiceData.price) : "—"}
-                  </dd>
-                </div>
-              </div>
-            </dl>
-            <Button
-              type="submit"
-              form={formId}
-              className="mt-6 hidden w-full rounded-full lg:inline-flex"
-              size="lg"
-              disabled={isSubmitting || mutation.isPending || !canSubmit}
-            >
-              {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
-            </Button>
-            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Você pode remarcar ou cancelar em “Meus agendamentos” com até{" "}
-              {CLIENT_CHANGE_MIN_HOURS} horas de antecedência.
-            </p>
+        {!confirmed && (
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 p-3 backdrop-blur">
+            <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+              <p className="min-w-0 truncate text-sm" aria-live="polite">
+                {summaryLine || "Escolha serviço, dia e horário"}
+                {selectedServiceData && (
+                  <span className="ml-2 font-semibold text-primary">
+                    {formatCurrency(selectedServiceData.price)}
+                  </span>
+                )}
+              </p>
+              <Button
+                type="submit"
+                form={formId}
+                className="shrink-0 rounded-full px-5"
+                disabled={isSubmitting || mutation.isPending || !canSubmit}
+              >
+                {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
+              </Button>
+            </div>
           </div>
-        </aside>
+        )}
       </div>
 
       {confirmed && (

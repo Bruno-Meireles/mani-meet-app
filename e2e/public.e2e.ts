@@ -73,6 +73,8 @@ test.describe("tela de agendamento", () => {
     await expect(page.getByRole("radiogroup")).toHaveCount(0);
     const calendarTop = await page.getByRole("heading", { name: "Dia e horário" }).boundingBox();
     expect(calendarTop?.y).toBeLessThan(700);
+    await expect(page.getByRole("button", { name: "Confirmar agendamento" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Próximos dias" })).toBeVisible();
   });
 
   test("campos de dados têm rótulo associado", async ({ page }) => {
@@ -84,6 +86,8 @@ test.describe("tela de agendamento", () => {
 
   test("o calendário é anunciado em português", async ({ page }) => {
     await page.goto("/agendar");
+    await hydrated(page, "form button[type=button]");
+    await page.getByRole("button", { name: "Outra data" }).click();
     await expect(page.getByRole("button", { name: "Mês anterior" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Próximo mês" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Go to|Today/ })).toHaveCount(0);
@@ -92,10 +96,14 @@ test.describe("tela de agendamento", () => {
   test("dias do calendário têm alvo de toque de pelo menos 36px no celular", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/agendar");
+    await hydrated(page, "form button[type=button]");
+    await page.getByRole("button", { name: "Outra data" }).click();
     const day = page.getByRole("button", { name: /hoje/ }).first();
-    const box = await day.boundingBox();
-    expect(box?.width).toBeGreaterThanOrEqual(36);
-    expect(box?.height).toBeGreaterThanOrEqual(36);
+    // O popover abre com animação de zoom; mede só depois que o tamanho assenta.
+    await expect
+      .poll(async () => (await day.boundingBox())?.width ?? 0)
+      .toBeGreaterThanOrEqual(36);
+    expect((await day.boundingBox())?.height).toBeGreaterThanOrEqual(36);
   });
 });
 
