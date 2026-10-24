@@ -1,79 +1,63 @@
-# Manicure Agendado
+# Mani Meet — agendamento online para manicures
 
-Site com agendamento para salão de manicure. O código é independente da Lovable: backend no **seu** projeto Supabase e o app em host SSR próprio.
+Sistema white-label de agendamento para salões de manicure e nail designers: site público com agendamento em poucos cliques e painel administrativo completo. Uma instalação por salão.
 
-## Sair da Lovable (checklist)
+## Recursos
 
-Faça nesta ordem. **Não** clique em Remove Lovable Cloud antes do site novo estar estável.
+**Para a cliente**
+- Agendamento por serviço, dia e horário livre, sem criar conta.
+- Confirmação com botão de WhatsApp e **adicionar ao calendário** (.ics).
+- **Meus agendamentos**: consultar, remarcar e cancelar (com antecedência mínima configurável).
+- Lembrete por e-mail na véspera.
+- Layout responsivo (mobile first), SEO local (sitemap, dados estruturados) e instalável como app (PWA simples).
 
-### 1. Exportar a Cloud e criar o Supabase dedicado
+**Para a administradora** (`/admin`)
+- Agenda semanal, resumo do dia, faturamento estimado e clientes novas.
+- Cadastro de clientes e agendamento manual.
+- Serviços com duração, preço e ordem.
+- **Horários de funcionamento por dia, intervalo de almoço e folgas/datas bloqueadas.**
 
-1. Na Lovable: **Cloud → Overview → Advanced settings → Export project data**. Guarde o backup (tabelas + Auth).
-2. Crie um projeto em [supabase.com](https://supabase.com) (Free serve). Anote o **project ref**, a URL `https://<ref>.supabase.co` e as chaves em **Project Settings → API**.
-3. Este repositório ainda aponta no `.env` local para `*.lovable.cloud` até você copiar [`.env.example`](.env.example).
+**Técnico**
+- Reserva atômica no banco (sem horários duplicados) que respeita expediente e folgas.
+- Acesso anônimo ao banco bloqueado; leituras públicas só pelo servidor.
+- Limite de tentativas nos endpoints públicos, validação com Zod, headers de segurança.
+- Testes (Vitest), lint, typecheck e CI no GitHub Actions.
 
-### 2. Schema, dados e admin
+## Stack
 
-No PowerShell, autenticado na CLI (`npx supabase login`):
+TanStack Start (React 19, SSR) · Supabase (Postgres + Auth + RLS) · Tailwind CSS 4 + shadcn/ui · Vercel.
 
-```powershell
-.\scripts\apply-dedicated-supabase.ps1 -ProjectRef SEU_REF
-```
-
-Isso faz `supabase link` + `db push` das migrations em [`supabase/migrations/`](supabase/migrations/).
-
-Depois:
-
-1. Restaure o export da Cloud (SQL / CSV) se quiser os dados atuais.
-2. Se o Auth não veio no backup, crie o usuário admin em **Authentication → Users**.
-3. Edite [`supabase/seed_admin.sql`](supabase/seed_admin.sql) com o email desse usuário e rode no SQL Editor.
-4. **Authentication → Providers**: email/senha ligado. Google: Client ID/Secret do Google Cloud Console. Redirect: `https://<ref>.supabase.co/auth/v1/callback`.
-5. **Authentication → URL configuration**: Site URL e Redirect URLs com `http://localhost:5173` (ou a porta do Vite), `/login`, e o domínio de produção.
-
-### 3. Variáveis de ambiente
-
-Copie `.env.example` para `.env` (não é commitado) com as chaves do projeto **novo**, não as da Cloud.
-
-O login Google usa `supabase.auth.signInWithOAuth` (não mais `@lovable.dev/cloud-auth-js`).
-
-### 4. Hospedar (SSR)
-
-O build é TanStack Start + Nitro (alvo Cloudflare). Site estático puro não funciona.
-
-**Cloudflare Workers** (recomendado):
+## Começando
 
 ```sh
-npx wrangler login
-npm run deploy
-```
-
-O Nitro gera `.output/server/wrangler.json` no build; o script `deploy` usa esse arquivo.
-
-Defina `VITE_SUPABASE_*` **no build** (ficam no bundle) e `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` como secrets do Worker (`wrangler secret put ...`) para o SSR.
-
-**Node** (VPS, Docker, ou adaptador Vercel/Node):
-
-```sh
-npm run build
-npm start
-```
-
-Confira: agendar no público, login email, Google, CRUD no admin.
-
-### 5. Cortar a Lovable (por último)
-
-Quando o domínio novo estiver ok:
-
-1. Lovable: **Remove Lovable Cloud** (permanente; não migra dados sozinho).
-2. Pare de usar `https://mani-meet-app.lovable.app`.
-3. Desconecte o projeto no editor se não quiser mais sync com o GitHub. Não faça force-push do histórico enquanto o sync existir.
-
-## Desenvolvimento local
-
-Node.js + npm:
-
-```sh
-cp .env.example .env   # no Windows: Copy-Item .env.example .env
-npm i
+cp .env.example .env     # Windows: Copy-Item .env.example .env
+npm ci
 npm run dev
 ```
+
+Scripts: `npm run dev`, `build`, `lint`, `typecheck`, `test`, `format`.
+
+## Documentação
+
+- [docs/INSTALACAO.md](docs/INSTALACAO.md) — instalar para um novo cliente (marca, Supabase, variáveis, deploy, checklist de aceite).
+- [docs/MANUAL-ADMIN.md](docs/MANUAL-ADMIN.md) — manual da dona do salão.
+- [CONTEXT.md](CONTEXT.md) — glossário e regras do domínio.
+
+## Personalização rápida
+
+Tudo que muda entre clientes está em [`src/config/site.ts`](src/config/site.ts) (nome, contatos, endereço, textos) e nas cores de [`src/styles.css`](src/styles.css).
+
+## Estrutura
+
+```
+src/config/site.ts        configuração white-label
+src/lib/availability.ts   cálculo de horários livres (puro, testado)
+src/lib/appointments.*    server functions, schemas e utilidades
+src/routes/               páginas públicas, /admin e rotas de API
+src/components/admin/     abas do painel
+supabase/migrations/      banco, políticas de segurança e funções
+```
+
+## Observação sobre a Lovable
+
+O projeto nasceu na Lovable e ainda pode estar conectado a ela. Evite reescrever o histórico do git (force push, rebase de commits já publicados).

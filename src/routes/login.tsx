@@ -82,7 +82,7 @@ function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="demo@teste.com"
+                placeholder="voce@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -93,7 +93,7 @@ function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="demoteste"
+                placeholder="Sua senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -103,12 +103,6 @@ function LoginPage() {
               {loading ? "Entrando..." : "Entrar com email"}
             </Button>
           </form>
-
-          <div className="mt-4 rounded-2xl border border-border/60 bg-secondary/60 p-4 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">Acesso de demonstração</p>
-            <p>Email: demo@teste.com</p>
-            <p>Senha: demoteste</p>
-          </div>
         </div>
       </main>
       <Footer />
