@@ -28,13 +28,13 @@ CREATE POLICY "Anyone can view business hours"
   ON public.business_hours FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Admins manage business hours"
   ON public.business_hours FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  USING (private.has_role(auth.uid(), 'admin'::app_role)) WITH CHECK (private.has_role(auth.uid(), 'admin'::app_role));
 
 CREATE POLICY "Anyone can view blocked dates"
   ON public.blocked_dates FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Admins manage blocked dates"
   ON public.blocked_dates FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+  USING (private.has_role(auth.uid(), 'admin'::app_role)) WITH CHECK (private.has_role(auth.uid(), 'admin'::app_role));
 
 INSERT INTO public.business_hours (weekday, is_open, open_time, close_time) VALUES
   (0, false, '09:00', '19:00'),
