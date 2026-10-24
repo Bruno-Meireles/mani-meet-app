@@ -43,7 +43,11 @@ export function ServicesTab() {
   const upsertServiceFn = useServerFn(upsertService);
   const deleteServiceFn = useServerFn(deleteService);
 
-  const { data: services = [], isLoading, error } = useQuery({
+  const {
+    data: services = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["admin-services"],
     queryFn: () => listAllServicesFn(),
   });

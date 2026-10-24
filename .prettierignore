@@ -6,3 +6,9 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+.agents
+.claude
+.tanstack
+.wrangler
+archive-lovable
+propostas

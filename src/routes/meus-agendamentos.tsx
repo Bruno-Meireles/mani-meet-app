@@ -18,7 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -88,7 +94,9 @@ function RescheduleDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Reagendar</DialogTitle>
-          <DialogDescription>{appointment?.services?.name} — escolha uma nova data e horário.</DialogDescription>
+          <DialogDescription>
+            {appointment?.services?.name} — escolha uma nova data e horário.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-3">
           <Calendar
@@ -178,7 +186,9 @@ function MyAppointmentsPage() {
       <Header />
       <main className="container mx-auto flex-1 px-6 py-16">
         <div className="mb-10 text-center">
-          <h1 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">Meus agendamentos</h1>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+            Meus agendamentos
+          </h1>
           <p className="mt-3 text-muted-foreground">
             Consulte, remarque ou cancele seus horários pelo WhatsApp usado no agendamento.
           </p>
@@ -195,7 +205,10 @@ function MyAppointmentsPage() {
 
           <div className="mt-6 space-y-3">
             {appointments.map((appointment) => (
-              <div key={appointment.id} className="rounded-2xl border border-border/60 bg-background p-5">
+              <div
+                key={appointment.id}
+                className="rounded-2xl border border-border/60 bg-background p-5"
+              >
                 <div className="font-serif text-lg font-semibold">
                   {appointment.client_name} — {appointment.services?.name ?? ""}
                 </div>
@@ -204,13 +217,20 @@ function MyAppointmentsPage() {
                   {appointment.appointment_time.slice(0, 5)}
                 </div>
                 {appointment.notes && (
-                  <div className="text-sm text-muted-foreground">Observações: {appointment.notes}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Observações: {appointment.notes}
+                  </div>
                 )}
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button variant="outline" size="sm" onClick={() => setToReschedule(appointment)}>
                     Reagendar
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setToCancel(appointment)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => setToCancel(appointment)}
+                  >
                     Cancelar
                   </Button>
                 </div>
@@ -266,7 +286,10 @@ export const Route = createFileRoute("/meus-agendamentos")({
   head: () => ({
     meta: [
       { title: "Meus agendamentos — Nail Studio" },
-      { name: "description", content: "Consulte, remarque ou cancele seus agendamentos pelo número de WhatsApp usado" },
+      {
+        name: "description",
+        content: "Consulte, remarque ou cancele seus agendamentos pelo número de WhatsApp usado",
+      },
     ],
   }),
   component: MyAppointmentsPage,

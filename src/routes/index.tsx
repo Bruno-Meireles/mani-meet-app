@@ -7,9 +7,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Nail Studio — Manicure e Nail Art" },
-      { name: "description", content: "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade." },
+      {
+        name: "description",
+        content:
+          "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade.",
+      },
       { property: "og:title", content: "Nail Studio — Manicure e Nail Art" },
-      { property: "og:description", content: "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade." },
+      {
+        property: "og:description",
+        content:
+          "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -39,9 +47,21 @@ const services = [
 ];
 
 const features = [
-  { icon: Calendar, title: "Agendamento fácil", text: "Escolha o serviço, dia e horário disponíveis em poucos cliques." },
-  { icon: Clock, title: "Horários flexíveis", text: "Atendimento de segunda a sábado, com horários que cabem na sua rotina." },
-  { icon: Heart, title: "Cuidado especial", text: "Produtos de qualidade e atenção aos detalhes para unhas saudáveis." },
+  {
+    icon: Calendar,
+    title: "Agendamento fácil",
+    text: "Escolha o serviço, dia e horário disponíveis em poucos cliques.",
+  },
+  {
+    icon: Clock,
+    title: "Horários flexíveis",
+    text: "Atendimento de segunda a sábado, com horários que cabem na sua rotina.",
+  },
+  {
+    icon: Heart,
+    title: "Cuidado especial",
+    text: "Produtos de qualidade e atenção aos detalhes para unhas saudáveis.",
+  },
 ];
 
 function HomePage() {
@@ -60,7 +80,8 @@ function HomePage() {
                 Cuidado e beleza para <span className="italic text-primary">suas unhas</span>
               </h1>
               <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:mx-0">
-                Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade e segurança.
+                Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com
+                praticidade e segurança.
               </p>
               <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row md:justify-start">
                 <Button asChild size="lg">
@@ -72,7 +93,10 @@ function HomePage() {
               </div>
             </div>
             <div className="relative mx-auto w-full max-w-md">
-              <div className="absolute -inset-4 rounded-[2.5rem] bg-primary/10 blur-2xl" aria-hidden />
+              <div
+                className="absolute -inset-4 rounded-[2.5rem] bg-primary/10 blur-2xl"
+                aria-hidden
+              />
               <img
                 src="/images/hero.svg"
                 alt="Mãos com esmaltação em tons de rosa e detalhes dourados"
@@ -87,7 +111,9 @@ function HomePage() {
         <section className="px-6 py-24">
           <div className="container mx-auto max-w-6xl">
             <div className="mb-16 text-center">
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">Serviços</p>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">
+                Serviços
+              </p>
               <h2 className="mt-4 font-serif text-4xl font-semibold tracking-tight md:text-5xl">
                 Feito com carinho, <span className="italic">detalhe por detalhe</span>
               </h2>
@@ -108,7 +134,9 @@ function HomePage() {
                   </div>
                   <div className="p-8">
                     <h3 className="font-serif text-2xl font-semibold">{s.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.description}</p>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      {s.description}
+                    </p>
                   </div>
                 </article>
               ))}
@@ -120,7 +148,10 @@ function HomePage() {
           <div className="container mx-auto max-w-6xl">
             <div className="grid gap-8 md:grid-cols-3">
               {features.map(({ icon: Icon, title, text }) => (
-                <div key={title} className="rounded-3xl border border-border/60 bg-card p-10 text-center shadow-soft">
+                <div
+                  key={title}
+                  className="rounded-3xl border border-border/60 bg-card p-10 text-center shadow-soft"
+                >
                   <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
                     <Icon className="h-6 w-6" />
                   </div>

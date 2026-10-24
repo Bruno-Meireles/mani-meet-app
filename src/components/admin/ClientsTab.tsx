@@ -70,7 +70,11 @@ export function ClientsTab() {
   const createAppointmentFn = useServerFn(createAppointment);
   const getSlotsFn = useServerFn(getAvailableSlots);
 
-  const { data: clients = [], isLoading, error } = useQuery({
+  const {
+    data: clients = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["clients"],
     queryFn: () => listClientsFn(),
   });
@@ -130,7 +134,7 @@ export function ClientsTab() {
             },
           });
           // createAppointmentMutation.onSuccess will handle closing/resetting
-        } catch (e: any) {
+        } catch {
           // createAppointmentMutation already shows toast on error
         }
       } else {
@@ -191,7 +195,8 @@ export function ClientsTab() {
     <div>
       <div className="mb-6 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {clients.length} cliente{clients.length === 1 ? "" : "s"} cadastrado{clients.length === 1 ? "" : "s"}
+          {clients.length} cliente{clients.length === 1 ? "" : "s"} cadastrado
+          {clients.length === 1 ? "" : "s"}
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -269,7 +274,7 @@ export function ClientsTab() {
                           <SelectValue placeholder="Escolha um serviço" />
                         </SelectTrigger>
                         <SelectContent>
-                          {adminServices.map((s: any) => (
+                          {adminServices.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
                               {s.name} — {s.duration_minutes}min
                             </SelectItem>
@@ -283,7 +288,10 @@ export function ClientsTab() {
                       <Input
                         type="date"
                         value={apptDate}
-                        onChange={(e) => { setApptDate(e.target.value); setApptTime(""); }}
+                        onChange={(e) => {
+                          setApptDate(e.target.value);
+                          setApptTime("");
+                        }}
                       />
                     </div>
 
@@ -303,14 +311,20 @@ export function ClientsTab() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <p className="text-sm text-muted-foreground">Selecione serviço e data para ver horários.</p>
+                        <p className="text-sm text-muted-foreground">
+                          Selecione serviço e data para ver horários.
+                        </p>
                       )}
                     </div>
                   </div>
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={save.isPending || createAppointmentMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={save.isPending || createAppointmentMutation.isPending}
+              >
                 {save.isPending || createAppointmentMutation.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </form>
@@ -352,11 +366,7 @@ export function ClientsTab() {
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Excluir ${client.name}`}
-                    >
+                    <Button variant="ghost" size="icon" aria-label={`Excluir ${client.name}`}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </AlertDialogTrigger>
@@ -364,8 +374,8 @@ export function ClientsTab() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Excluir cliente?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {client.name} será removido da lista de clientes. Agendamentos já feitos
-                        não são apagados.
+                        {client.name} será removido da lista de clientes. Agendamentos já feitos não
+                        são apagados.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

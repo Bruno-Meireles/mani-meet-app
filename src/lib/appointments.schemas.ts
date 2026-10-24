@@ -14,12 +14,7 @@ export const serviceSchema = z.object({
 
 export type Service = z.infer<typeof serviceSchema>;
 
-export const appointmentStatusSchema = z.enum([
-  "scheduled",
-  "confirmed",
-  "completed",
-  "cancelled",
-]);
+export const appointmentStatusSchema = z.enum(["scheduled", "confirmed", "completed", "cancelled"]);
 
 export type AppointmentStatus = z.infer<typeof appointmentStatusSchema>;
 

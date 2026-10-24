@@ -35,8 +35,12 @@ export function generateAllSlots(
   const [startHour, startMinute] = BUSINESS_HOURS.start.split(":").map(Number);
   const [endHour, endMinute] = BUSINESS_HOURS.end.split(":").map(Number);
 
-  const start = new Date(`${date}T${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}:00`);
-  const end = new Date(`${date}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`);
+  const start = new Date(
+    `${date}T${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}:00`,
+  );
+  const end = new Date(
+    `${date}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`,
+  );
 
   let current = start;
   while (current < end) {
@@ -61,7 +65,9 @@ export function generateTimeSlots(
   const isToday = startOfDay(selectedDate).getTime() === startOfDay(now).getTime();
 
   const [endHour, endMinute] = BUSINESS_HOURS.end.split(":").map(Number);
-  const end = new Date(`${date}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`);
+  const end = new Date(
+    `${date}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`,
+  );
 
   for (const time of all) {
     const current = new Date(`${date}T${time}:00`);

@@ -44,3 +44,6 @@ supabase/.branches/
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code local state
+.claude/worktrees/

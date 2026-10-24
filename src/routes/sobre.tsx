@@ -6,9 +6,15 @@ export const Route = createFileRoute("/sobre")({
   head: () => ({
     meta: [
       { title: "Sobre — Nail Studio" },
-      { name: "description", content: "Conheça o Nail Studio, nosso espaço de manicure e cuidados com as unhas." },
+      {
+        name: "description",
+        content: "Conheça o Nail Studio, nosso espaço de manicure e cuidados com as unhas.",
+      },
       { property: "og:title", content: "Sobre — Nail Studio" },
-      { property: "og:description", content: "Conheça o Nail Studio, nosso espaço de manicure e cuidados com as unhas." },
+      {
+        property: "og:description",
+        content: "Conheça o Nail Studio, nosso espaço de manicure e cuidados com as unhas.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -34,10 +40,13 @@ function AboutPage() {
           <div className="grid gap-10 md:grid-cols-2">
             <div className="space-y-6">
               <p className="leading-relaxed text-foreground">
-                No Nail Studio, cada atendimento é pensado para oferecer uma experiência relaxante e resultados impecáveis. Trabalhamos com técnicas modernas, produtos de qualidade e muita atenção aos detalhes.
+                No Nail Studio, cada atendimento é pensado para oferecer uma experiência relaxante e
+                resultados impecáveis. Trabalhamos com técnicas modernas, produtos de qualidade e
+                muita atenção aos detalhes.
               </p>
               <p className="leading-relaxed text-foreground">
-                Nossa manicure é especialista em esmaltação em gel, alongamentos, manutenções e nail art. Aqui você encontra um ambiente acolhedor para cuidar de si.
+                Nossa manicure é especialista em esmaltação em gel, alongamentos, manutenções e nail
+                art. Aqui você encontra um ambiente acolhedor para cuidar de si.
               </p>
             </div>
 

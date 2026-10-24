@@ -18,7 +18,10 @@ export const Route = createFileRoute("/api/public/send-reminders")({
         const apiKey = process.env["RESEND_API_KEY"];
         const from = process.env["REMINDER_FROM_EMAIL"];
         if (!apiKey || !from) {
-          return Response.json({ error: "RESEND_API_KEY/REMINDER_FROM_EMAIL não configurados" }, { status: 500 });
+          return Response.json(
+            { error: "RESEND_API_KEY/REMINDER_FROM_EMAIL não configurados" },
+            { status: 500 },
+          );
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -38,7 +41,8 @@ export const Route = createFileRoute("/api/public/send-reminders")({
         let sent = 0;
         const failed: string[] = [];
         for (const a of data ?? []) {
-          const service = (a.services as unknown as { name: string } | null)?.name ?? "seu atendimento";
+          const service =
+            (a.services as unknown as { name: string } | null)?.name ?? "seu atendimento";
           const time = a.appointment_time.slice(0, 5);
           const res = await fetch("https://api.resend.com/emails", {
             method: "POST",

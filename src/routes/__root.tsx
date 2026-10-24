@@ -36,7 +36,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -80,10 +80,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Studio de Manicure — Agende seu horário" },
-      { name: "description", content: "Agende seu horário de manicure com praticidade. Serviços de esmaltação em gel, alongamento, nail art e muito mais." },
+      {
+        name: "description",
+        content:
+          "Agende seu horário de manicure com praticidade. Serviços de esmaltação em gel, alongamento, nail art e muito mais.",
+      },
       { name: "author", content: "Nail Studio" },
       { property: "og:title", content: "Studio de Manicure — Agende seu horário" },
-      { property: "og:description", content: "Agende seu horário de manicure com praticidade. Serviços de esmaltação em gel, alongamento, nail art e muito mais." },
+      {
+        property: "og:description",
+        content:
+          "Agende seu horário de manicure com praticidade. Serviços de esmaltação em gel, alongamento, nail art e muito mais.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@nailstudio" },

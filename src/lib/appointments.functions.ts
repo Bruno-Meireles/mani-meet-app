@@ -3,16 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  createAppointmentSchema,
-  updateAppointmentSchema,
-} from "./appointments.schemas";
+import { createAppointmentSchema, updateAppointmentSchema } from "./appointments.schemas";
 import { generateTimeSlots, CLIENT_CHANGE_MIN_HOURS } from "./appointments.utils";
 import type { Service, Appointment } from "./appointments.schemas";
 
 function createPublicClient() {
-  const url = process.env['SUPABASE_URL']!;
-  const key = process.env['SUPABASE_PUBLISHABLE_KEY']!;
+  const url = process.env["SUPABASE_URL"]!;
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
     global: {
@@ -102,7 +99,9 @@ export const getAppointmentsByPhone = createServerFn({ method: "POST" })
     const phoneDigits = String(data.phone || "").replace(/\D/g, "");
     const { data: appointments, error } = await supabase
       .from("appointments")
-      .select("id, client_name, client_phone, service_id, appointment_date, appointment_time, status, notes, services(name, duration_minutes)")
+      .select(
+        "id, client_name, client_phone, service_id, appointment_date, appointment_time, status, notes, services(name, duration_minutes)",
+      )
       .eq("client_phone", phoneDigits)
       .gte("appointment_date", todayInSalonTz())
       .in("status", ["scheduled", "confirmed"])
@@ -160,18 +159,22 @@ export const createAppointment = createServerFn({ method: "POST" })
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-      const { data: rpcResult, error: rpcError } = await (supabaseAdmin as any).rpc<any>(
-        "create_appointment_locked",
-        {
-          p_client_name: insertPayload.client_name,
-          p_client_phone: insertPayload.client_phone,
-          p_client_email: insertPayload.client_email,
-          p_service_id: insertPayload.service_id,
-          p_appointment_date: insertPayload.appointment_date,
-          p_appointment_time: insertPayload.appointment_time,
-          p_notes: insertPayload.notes,
-        },
-      );
+      const { data: rpcResult, error: rpcError } = await (
+        supabaseAdmin as unknown as {
+          rpc: (
+            fn: string,
+            args: Record<string, unknown>,
+          ) => Promise<{ data: unknown; error: { message?: string } | null }>;
+        }
+      ).rpc("create_appointment_locked", {
+        p_client_name: insertPayload.client_name,
+        p_client_phone: insertPayload.client_phone,
+        p_client_email: insertPayload.client_email,
+        p_service_id: insertPayload.service_id,
+        p_appointment_date: insertPayload.appointment_date,
+        p_appointment_time: insertPayload.appointment_time,
+        p_notes: insertPayload.notes,
+      });
 
       if (rpcError) {
         // The RPC raises an exception on conflict which surfaces here.
@@ -190,12 +193,11 @@ export const createAppointment = createServerFn({ method: "POST" })
       );
 
       return { success: true };
-    } catch (e: any) {
+    } catch (e) {
       // Re-throw known errors so the caller shows a friendly message
-      if (e && e.message) throw new Error(e.message);
+      if (e instanceof Error && e.message) throw new Error(e.message);
       throw e;
     }
-
   });
 
 export const listAppointments = createServerFn({ method: "GET" })
@@ -229,7 +231,7 @@ export const updateAppointment = createServerFn({ method: "POST" })
     const { id, ...updates } = data;
     const updateData = Object.fromEntries(
       Object.entries(updates).filter(([, v]) => v !== undefined),
-    ) as unknown as Database['public']['Tables']['appointments']['Update'];
+    ) as unknown as Database["public"]["Tables"]["appointments"]["Update"];
 
     const { data: appointment, error } = await context.supabase
       .from("appointments")
@@ -387,7 +389,9 @@ async function loadChangeableAppointment(id: string, phone: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: appt, error } = await supabaseAdmin
     .from("appointments")
-    .select("id, appointment_date, appointment_time, status, service_id, services(duration_minutes)")
+    .select(
+      "id, appointment_date, appointment_time, status, service_id, services(duration_minutes)",
+    )
     .eq("id", id)
     .eq("client_phone", phone.replace(/\D/g, ""))
     .maybeSingle();
@@ -396,7 +400,9 @@ async function loadChangeableAppointment(id: string, phone: string) {
   if (!["scheduled", "confirmed"].includes(appt.status)) {
     throw new Error("Este agendamento não pode mais ser alterado");
   }
-  const hoursLeft = (appointmentStart(appt.appointment_date, appt.appointment_time).getTime() - Date.now()) / 3_600_000;
+  const hoursLeft =
+    (appointmentStart(appt.appointment_date, appt.appointment_time).getTime() - Date.now()) /
+    3_600_000;
   if (hoursLeft < CLIENT_CHANGE_MIN_HOURS) {
     throw new Error(
       `Alterações online só até ${CLIENT_CHANGE_MIN_HOURS}h antes do horário. Fale com o studio pelo WhatsApp.`,
@@ -473,11 +479,16 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const [monthRes, clientsRes] = await Promise.all([
       context.supabase
         .from("appointments")
-        .select("id, client_name, client_phone, appointment_date, appointment_time, status, reminder_sent_at, services(name, price)")
+        .select(
+          "id, client_name, client_phone, appointment_date, appointment_time, status, reminder_sent_at, services(name, price)",
+        )
         .gte("appointment_date", monthStart)
         .neq("status", "cancelled")
         .order("appointment_time", { ascending: true }),
-      context.supabase.from("clients").select("id", { count: "exact", head: true }).gte("created_at", thirtyDaysAgo),
+      context.supabase
+        .from("clients")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", thirtyDaysAgo),
     ]);
     if (monthRes.error) throw new Error(monthRes.error.message);
     if (clientsRes.error) throw new Error(clientsRes.error.message);
@@ -499,7 +510,9 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     return {
       todayCount: rows.filter((r) => r.appointment_date === today).length,
       monthRevenue: month.reduce((sum, r) => sum + price(r), 0),
-      monthCompletedRevenue: month.filter((r) => r.status === "completed").reduce((sum, r) => sum + price(r), 0),
+      monthCompletedRevenue: month
+        .filter((r) => r.status === "completed")
+        .reduce((sum, r) => sum + price(r), 0),
       monthCount: month.length,
       newClients: clientsRes.count ?? 0,
       tomorrow: rows

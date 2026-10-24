@@ -14,7 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createAppointmentSchema, type CreateAppointmentInput } from "@/lib/appointments.schemas";
-import { listServices, getAvailableSlots, createAppointment, getProfile } from "@/lib/appointments.functions";
+import {
+  listServices,
+  getAvailableSlots,
+  createAppointment,
+  getProfile,
+} from "@/lib/appointments.functions";
 import { formatCurrency, generateAllSlots } from "@/lib/appointments.utils";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -74,7 +79,13 @@ function BookingPage() {
   });
 
   const selectedServiceData = services.find((s) => s.id === selectedService);
-  const allSlots = selectedDate && selectedService ? generateAllSlots(selectedDate.toISOString().slice(0,10), selectedServiceData?.duration_minutes ?? 30) : [];
+  const allSlots =
+    selectedDate && selectedService
+      ? generateAllSlots(
+          selectedDate.toISOString().slice(0, 10),
+          selectedServiceData?.duration_minutes ?? 30,
+        )
+      : [];
 
   const {
     register,
@@ -128,23 +139,26 @@ function BookingPage() {
       // Do not auto-open WhatsApp. The confirmation button handles opening via user gesture.
     },
     onError: (error: Error) => {
-      const msg = (error && (error as any).message) || "Erro ao criar agendamento";
+      const msg = error?.message || "Erro ao criar agendamento";
       toast.error(msg);
       // If the error indicates the slot is no longer available, refresh slots and clear selection
-      if (typeof msg === 'string' && msg.includes('Horário não disponível')) {
-        const dateKey = appointmentDate || (selectedDate ? selectedDate.toISOString().slice(0,10) : undefined);
+      if (typeof msg === "string" && msg.includes("Horário não disponível")) {
+        const dateKey =
+          appointmentDate || (selectedDate ? selectedDate.toISOString().slice(0, 10) : undefined);
         // Invalidate and refetch the exact slots query so UI updates immediately
         if (dateKey && selectedService) {
-          queryClient.invalidateQueries({ queryKey: ['slots', dateKey, selectedService] });
-          queryClient.refetchQueries({ queryKey: ['slots', dateKey, selectedService], exact: true });
+          queryClient.invalidateQueries({ queryKey: ["slots", dateKey, selectedService] });
+          queryClient.refetchQueries({
+            queryKey: ["slots", dateKey, selectedService],
+            exact: true,
+          });
         } else {
-          queryClient.invalidateQueries({ queryKey: ['slots'] });
-          queryClient.refetchQueries({ queryKey: ['slots'], exact: true });
+          queryClient.invalidateQueries({ queryKey: ["slots"] });
+          queryClient.refetchQueries({ queryKey: ["slots"], exact: true });
         }
-        setValue('appointment_time', '');
+        setValue("appointment_time", "");
       }
     },
-
   });
 
   const canSubmit = !!appointmentTime && slots.includes(appointmentTime);
@@ -157,7 +171,8 @@ function BookingPage() {
     mutation.mutate(data);
   };
 
-  const fallbackPhone = (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env['VITE_WHATSAPP_NUMBER']) ? (import.meta as any).env['VITE_WHATSAPP_NUMBER'] : (process.env['VITE_WHATSAPP_NUMBER'] || '11989433006');
+  const fallbackPhone: string =
+    (import.meta.env["VITE_WHATSAPP_NUMBER"] as string | undefined) || "11989433006";
   const salonPhoneSource = profile?.phone ?? fallbackPhone ?? "";
   const salonPhoneDigitsRaw = salonPhoneSource.replace(/\D/g, "");
   let salonPhoneDigits = salonPhoneDigitsRaw.replace(/^0+/, "");
@@ -175,7 +190,6 @@ function BookingPage() {
           return `https://api.whatsapp.com/send?phone=${salonPhoneDigits}&text=${encodeURIComponent(msg)}`;
         })()
       : null;
-
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -223,14 +237,22 @@ function BookingPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="client_phone">Telefone / WhatsApp</Label>
-                <Input id="client_phone" placeholder="(11) 99999-9999" {...register("client_phone")} />
+                <Input
+                  id="client_phone"
+                  placeholder="(11) 99999-9999"
+                  {...register("client_phone")}
+                />
                 {errors.client_phone && (
                   <p className="text-xs text-destructive">{errors.client_phone.message}</p>
                 )}
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="client_email">Email (opcional)</Label>
-                <Input id="client_email" placeholder="seu@email.com" {...register("client_email")} />
+                <Input
+                  id="client_email"
+                  placeholder="seu@email.com"
+                  {...register("client_email")}
+                />
                 {errors.client_email && (
                   <p className="text-xs text-destructive">{errors.client_email.message}</p>
                 )}
@@ -246,7 +268,8 @@ function BookingPage() {
                 <SelectContent>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name} — {formatCurrency(service.price)} / {service.duration_minutes}min
+                      {service.name} — {formatCurrency(service.price)} / {service.duration_minutes}
+                      min
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -256,9 +279,7 @@ function BookingPage() {
                 <p className="text-xs text-destructive">{errors.service_id.message}</p>
               )}
               {selectedServiceData && (
-                <p className="text-sm text-muted-foreground">
-                  {selectedServiceData.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{selectedServiceData.description}</p>
               )}
             </div>
 
@@ -313,7 +334,9 @@ function BookingPage() {
                       })}
                     </div>
                     {slots.length === 0 && (
-                      <p className="text-sm text-muted-foreground">Nenhum horário disponível para essa data.</p>
+                      <p className="text-sm text-muted-foreground">
+                        Nenhum horário disponível para essa data.
+                      </p>
                     )}
                   </>
                 ) : (
@@ -329,7 +352,11 @@ function BookingPage() {
 
             <div className="space-y-2">
               <Label htmlFor="notes">Observações (opcional)</Label>
-              <Input id="notes" placeholder="Alguma preferência ou informação extra" {...register("notes")} />
+              <Input
+                id="notes"
+                placeholder="Alguma preferência ou informação extra"
+                {...register("notes")}
+              />
             </div>
 
             <Button
@@ -341,17 +368,23 @@ function BookingPage() {
               {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
             </Button>
             {(!canSubmit || !appointmentTime) && (
-              <p className="text-sm text-muted-foreground mt-2">Escolha um horário disponível antes de confirmar.</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Escolha um horário disponível antes de confirmar.
+              </p>
             )}
           </form>
 
           {confirmed && (
-            <div ref={confirmationRef} id="confirmation-card" className="mt-8 rounded-3xl border border-border/60 bg-card p-8 text-center shadow-soft md:p-12">
+            <div
+              ref={confirmationRef}
+              id="confirmation-card"
+              className="mt-8 rounded-3xl border border-border/60 bg-card p-8 text-center shadow-soft md:p-12"
+            >
               <h2 className="font-serif text-xl font-semibold text-foreground">
                 Agendamento confirmado!
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para {" "}
+                {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para{" "}
                 {confirmed.dateLabel} às {confirmed.time}.
               </p>
               {whatsappUrl && (
@@ -361,7 +394,11 @@ function BookingPage() {
                     if (!win) {
                       toast.error("Não foi possível abrir o WhatsApp. Tente novamente.");
                     } else {
-                      try { win.focus(); } catch (e) {}
+                      try {
+                        win.focus();
+                      } catch {
+                        // focus pode falhar em alguns navegadores; a janela já foi aberta
+                      }
                     }
                   }}
                   className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-soft transition-all hover:bg-primary/90"
@@ -370,9 +407,15 @@ function BookingPage() {
                 </button>
               )}
 
-              <Button variant="ghost" size="sm" onClick={() => { setConfirmed(null); }}>
-                  Fazer novo agendamento
-                </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setConfirmed(null);
+                }}
+              >
+                Fazer novo agendamento
+              </Button>
             </div>
           )}
         </div>

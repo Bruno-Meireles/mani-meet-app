@@ -111,7 +111,6 @@ function LoginPage() {
             <p>Email: demo@teste.com</p>
             <p>Senha: demoteste</p>
           </div>
-
         </div>
       </main>
       <footer className="border-t border-border bg-background px-6 py-12 text-center text-sm text-muted-foreground">

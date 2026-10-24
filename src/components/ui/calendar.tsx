@@ -34,7 +34,7 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date) => format(date, 'MMM', { locale: ptBR }),
+        formatMonthDropdown: (date) => format(date, "MMM", { locale: ptBR }),
         ...formatters,
       }}
       classNames={{
@@ -156,7 +156,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
-      data-day={format(day.date, 'dd/MM/yyyy', { locale: ptBR })}
+      data-day={format(day.date, "dd/MM/yyyy", { locale: ptBR })}
       data-selected-single={
         modifiers["selected"] &&
         !modifiers["range_start"] &&

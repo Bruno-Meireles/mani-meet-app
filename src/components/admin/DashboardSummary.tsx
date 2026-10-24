@@ -19,7 +19,9 @@ export function DashboardSummary() {
     return (
       <div className="mb-10 rounded-3xl border border-border/60 bg-card p-6 shadow-soft">
         <p className="font-medium">Não foi possível carregar o resumo.</p>
-        <p className="mt-1 text-sm text-muted-foreground">{error instanceof Error ? error.message : "Erro desconhecido"}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {error instanceof Error ? error.message : "Erro desconhecido"}
+        </p>
       </div>
     );
   }
@@ -33,7 +35,12 @@ export function DashboardSummary() {
       value: formatCurrency(data.monthRevenue),
       hint: `estimado · ${formatCurrency(data.monthCompletedRevenue)} concluído`,
     },
-    { icon: UserPlus, label: "Clientes novas", value: String(data.newClients), hint: "nos últimos 30 dias" },
+    {
+      icon: UserPlus,
+      label: "Clientes novas",
+      value: String(data.newClients),
+      hint: "nos últimos 30 dias",
+    },
   ];
 
   return (
@@ -53,7 +60,7 @@ export function DashboardSummary() {
         ))}
       </div>
 
-      {(
+      {
         <div className="rounded-3xl border border-border/60 bg-cream p-6 shadow-soft">
           <h3 className="font-serif text-xl font-semibold">Lembretes para amanhã</h3>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -62,7 +69,8 @@ export function DashboardSummary() {
           <div className="mt-4 space-y-3">
             {data.tomorrow.length === 0 && (
               <p className="rounded-2xl border border-dashed border-border bg-card/60 p-4 text-sm text-muted-foreground">
-                Nenhum agendamento para amanhã. Quando houver, eles aparecem aqui com o botão de WhatsApp.
+                Nenhum agendamento para amanhã. Quando houver, eles aparecem aqui com o botão de
+                WhatsApp.
               </p>
             )}
             {data.tomorrow.map((a) => (
@@ -78,7 +86,11 @@ export function DashboardSummary() {
                   </p>
                 </div>
                 <Button asChild variant="outline" size="sm" className="gap-2">
-                  <a href={toWhatsappUrl(a.client_phone, a.client_name, a.time, a.service)} target="_blank" rel="noreferrer">
+                  <a
+                    href={toWhatsappUrl(a.client_phone, a.client_name, a.time, a.service)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <MessageCircle className="h-4 w-4" />
                     Lembrar no WhatsApp
                   </a>
@@ -87,7 +99,7 @@ export function DashboardSummary() {
             ))}
           </div>
         </div>
-      )}
+      }
     </div>
   );
 }
