@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createAppointmentSchema, updateAppointmentSchema } from "./appointments.schemas";
 import { siteConfig } from "@/config/site";
 import { CLIENT_CHANGE_MIN_HOURS } from "./appointments.utils";
+import { clientIp, rateLimit } from "./rate-limit";
 import { DEFAULT_HOURS, computeSlots, nowInTimezone, type DayHours } from "./availability";
 import type { Service, Appointment } from "./appointments.schemas";
 
@@ -40,10 +41,24 @@ function appointmentStart(date: string, time: string) {
   return new Date(`${date}T${time.slice(0, 5)}:00-03:00`);
 }
 
+/**
+ * Cliente com service role, só no servidor. Os dados de agendamentos (nome/telefone das clientes)
+ * não são legíveis pelo papel `anon`; toda leitura pública passa por aqui e devolve só o necessário.
+ */
+async function getServiceClient() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
+const tooManyRequests = () =>
+  new Error("Muitas tentativas. Aguarde alguns minutos e tente de novo.");
+
 type Schedule = { hours: DayHours[]; blockedDates: string[] };
 
 /** Horários de funcionamento e folgas; usa o padrão se o salão ainda não configurou. */
-async function loadSchedule(supabase: ReturnType<typeof createPublicClient>): Promise<Schedule> {
+async function loadSchedule(
+  supabase: Awaited<ReturnType<typeof getServiceClient>>,
+): Promise<Schedule> {
   const [hoursRes, blockedRes] = await Promise.all([
     supabase.from("business_hours").select("*"),
     supabase.from("blocked_dates").select("blocked_date"),
@@ -94,9 +109,13 @@ export const listServices = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const getAvailableSlots = createServerFn({ method: "GET" })
-  .validator((input: { date: string; serviceId: string }) => input)
+  .validator((input: unknown) =>
+    z
+      .object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), serviceId: z.string().uuid() })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
-    const supabase = createPublicClient();
+    const supabase = await getServiceClient();
 
     const { data: service, error: serviceError } = await supabase
       .from("services")
@@ -128,10 +147,11 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
   });
 
 export const getAppointmentsByPhone = createServerFn({ method: "POST" })
-  .validator((input: { phone: string }) => input)
+  .validator((input: unknown) => z.object({ phone: z.string().min(8).max(20) }).parse(input))
   .handler(async ({ data }) => {
-    const supabase = createPublicClient();
-    const phoneDigits = String(data.phone || "").replace(/\D/g, "");
+    if (!rateLimit(`lookup:${await clientIp()}`, 20, 10 * 60_000)) throw tooManyRequests();
+    const supabase = await getServiceClient();
+    const phoneDigits = data.phone.replace(/\D/g, "");
     const { data: appointments, error } = await supabase
       .from("appointments")
       .select(
@@ -149,7 +169,8 @@ export const getAppointmentsByPhone = createServerFn({ method: "POST" })
 export const createAppointment = createServerFn({ method: "POST" })
   .validator((input: unknown) => createAppointmentSchema.parse(input))
   .handler(async ({ data }) => {
-    const supabase = createPublicClient();
+    if (!rateLimit(`book:${await clientIp()}`, 6, 10 * 60_000)) throw tooManyRequests();
+    const supabase = await getServiceClient();
 
     const { data: service, error: serviceError } = await supabase
       .from("services")
@@ -528,6 +549,7 @@ const clientChangeSchema = z.object({
  * ativo e com antecedência mínima de CLIENT_CHANGE_MIN_HOURS.
  */
 async function loadChangeableAppointment(id: string, phone: string) {
+  if (!rateLimit(`change:${await clientIp()}`, 15, 10 * 60_000)) throw tooManyRequests();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: appt, error } = await supabaseAdmin
     .from("appointments")

@@ -35,13 +35,13 @@ export const appointmentSchema = z.object({
 export type Appointment = z.infer<typeof appointmentSchema>;
 
 export const createAppointmentSchema = z.object({
-  client_name: z.string().min(2, "Informe o nome"),
-  client_phone: z.string().min(8, "Informe um telefone válido"),
-  client_email: z.string().email("Informe um email válido").optional().or(z.literal("")),
+  client_name: z.string().trim().min(2, "Informe o nome").max(100),
+  client_phone: z.string().min(8, "Informe um telefone válido").max(20),
+  client_email: z.string().email("Informe um email válido").max(150).optional().or(z.literal("")),
   service_id: z.string().uuid("Escolha um serviço"),
   appointment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Escolha uma data"),
   appointment_time: z.string().regex(/^\d{2}:\d{2}$/, "Escolha um horário"),
-  notes: z.string().optional(),
+  notes: z.string().max(500).optional(),
 });
 
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
