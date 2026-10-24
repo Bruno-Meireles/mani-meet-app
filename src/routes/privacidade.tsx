@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header } from "@/features/site-shell/Header";
+import { Footer } from "@/features/site-shell/Footer";
 import { pageMeta, siteConfig } from "@/config/site";
 
 export const Route = createFileRoute("/privacidade")({

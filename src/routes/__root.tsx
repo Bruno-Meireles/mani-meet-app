@@ -14,6 +14,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { pageMeta, siteConfig } from "@/config/site";
+import { googleFontsHref, resolveTheme, themeToCss } from "@/config/theme";
+
+const theme = resolveTheme(siteConfig.theme);
 
 function NotFoundComponent() {
   return (
@@ -96,11 +99,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap",
-      },
+      { rel: "stylesheet", href: googleFontsHref(theme) },
     ],
+    styles: [{ children: themeToCss(theme) }],
     scripts: [
       {
         type: "application/ld+json",

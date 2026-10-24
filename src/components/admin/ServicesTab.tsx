@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { listAllServices, upsertService, deleteService } from "@/server/api";
+import { listAllServices, upsertService, deleteService } from "@/actions/admin.functions";
 import { formatCurrency } from "@/shared/format";
 import type { Service } from "@/domain/appointments/schemas";
 import { toast } from "sonner";

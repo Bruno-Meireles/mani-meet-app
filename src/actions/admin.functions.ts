@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { updateAppointmentSchema } from "@/domain/appointments/schemas";
 import type { Appointment, Service } from "@/domain/appointments/schemas";
 import { DEFAULT_HOURS } from "@/domain/scheduling/availability";
-import { isAdmin, todayInSalonTz } from "./context";
+import { isAdmin, todayInSalonTz } from "./context.server";
 
 export const listAppointments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

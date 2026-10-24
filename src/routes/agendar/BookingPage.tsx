@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header } from "@/features/site-shell/Header";
+import { Footer } from "@/features/site-shell/Footer";
 import { siteConfig, whatsappDigits } from "@/config/site";
 import { buildIcs } from "@/domain/scheduling/calendar";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
   getAvailableSlots,
   createAppointment,
   getProfile,
-} from "@/server/api";
+} from "@/actions/public.functions";
 import { formatCurrency } from "@/shared/format";
 import { generateAllSlots } from "@/domain/scheduling/availability";
 import { useSchedule } from "@/shared/use-schedule";

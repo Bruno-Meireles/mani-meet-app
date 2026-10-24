@@ -31,7 +31,7 @@ import {
   listAppointments,
   updateAppointment,
   deleteAppointment,
-} from "@/server/api";
+} from "@/actions/admin.functions";
 import { formatDateBR, formatTime } from "@/shared/format";
 import type { AppointmentStatus } from "@/domain/appointments/schemas";
 import { toast } from "sonner";

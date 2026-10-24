@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import { Header } from "@/components/Header";
+import { Header } from "@/features/site-shell/Header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -34,7 +34,7 @@ import {
   getAvailableSlots,
   cancelMyAppointment,
   rescheduleMyAppointment,
-} from "@/server/api";
+} from "@/actions/public.functions";
 import { CLIENT_CHANGE_MIN_HOURS } from "@/domain/appointments/change-policy";
 import type { Appointment } from "@/domain/appointments/schemas";
 

@@ -10,7 +10,7 @@ import {
   getScheduleAdmin,
   removeBlockedDate,
   saveBusinessHours,
-} from "@/server/api";
+} from "@/actions/admin.functions";
 import { WEEKDAY_LABELS, type DayHours } from "@/domain/scheduling/availability";
 import { formatDateBR } from "@/shared/format";
 import { toast } from "sonner";

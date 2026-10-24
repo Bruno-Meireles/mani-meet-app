@@ -10,7 +10,7 @@ import { AppError } from "@/application/errors";
 import { createAppointmentSchema } from "@/domain/appointments/schemas";
 import type { Appointment, Service } from "@/domain/appointments/schemas";
 import { createSupabaseBookingGateway, loadScheduleFrom } from "@/infrastructure/supabase-booking-gateway";
-import { clientIp, clock, createPublicClient, getServiceClient, limiter, todayInSalonTz } from "./context";
+import { clientIp, clock, createPublicClient, getServiceClient, limiter, todayInSalonTz } from "./context.server";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 

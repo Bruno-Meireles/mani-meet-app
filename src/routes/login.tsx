@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header } from "@/features/site-shell/Header";
+import { Footer } from "@/features/site-shell/Footer";
 import { toast } from "sonner";
 import { pageMeta, siteConfig } from "@/config/site";
 
