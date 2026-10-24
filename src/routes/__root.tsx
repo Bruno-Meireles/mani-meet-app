@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { pageMeta, siteConfig } from "@/config/site";
 
 function NotFoundComponent() {
   return (
@@ -79,22 +80,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Studio de Manicure — Agende seu horário" },
-      {
-        name: "description",
-        content:
-          "Agende seu horário de manicure com praticidade. Serviços de esmaltação em gel, alongamento, nail art e muito mais.",
-      },
-      { name: "author", content: "Nail Studio" },
-      { property: "og:title", content: "Studio de Manicure — Agende seu horário" },
-      {
-        property: "og:description",
-        content:
-          "Agende seu horário de manicure com praticidade. Serviços de esmaltação em gel, alongamento, nail art e muito mais.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@nailstudio" },
+      ...pageMeta(undefined),
+      { name: "author", content: siteConfig.name },
+      { name: "theme-color", content: "#ffffff" },
+      ...(siteConfig.contact.instagram
+        ? [{ name: "twitter:site", content: `@${siteConfig.contact.instagram}` }]
+        : []),
     ],
     links: [
       {
@@ -118,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang={siteConfig.locale}>
       <head>
         <HeadContent />
       </head>

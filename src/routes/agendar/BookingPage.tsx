@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { whatsappDigits } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -171,15 +173,7 @@ function BookingPage() {
     mutation.mutate(data);
   };
 
-  const fallbackPhone: string =
-    (import.meta.env["VITE_WHATSAPP_NUMBER"] as string | undefined) || "11989433006";
-  const salonPhoneSource = profile?.phone ?? fallbackPhone ?? "";
-  const salonPhoneDigitsRaw = salonPhoneSource.replace(/\D/g, "");
-  let salonPhoneDigits = salonPhoneDigitsRaw.replace(/^0+/, "");
-  // If the number doesn't include country code, assume Brazil (+55)
-  if (salonPhoneDigits && !salonPhoneDigits.startsWith("55")) {
-    if (salonPhoneDigits.length <= 11) salonPhoneDigits = `55${salonPhoneDigits}`;
-  }
+  const salonPhoneDigits = whatsappDigits(profile?.phone);
 
   // Use api.whatsapp.com/send which works on desktop and mobile
   const whatsappUrl =
@@ -420,9 +414,7 @@ function BookingPage() {
           )}
         </div>
       </main>
-      <footer className="border-t border-border bg-background px-6 py-12 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Nail Studio. Todos os direitos reservados.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

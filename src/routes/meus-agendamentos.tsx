@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { pageMeta } from "@/config/site";
 import { useServerFn } from "@tanstack/react-start";
 import {
   getAppointmentsByPhone,
@@ -284,13 +285,10 @@ function MyAppointmentsPage() {
 
 export const Route = createFileRoute("/meus-agendamentos")({
   head: () => ({
-    meta: [
-      { title: "Meus agendamentos — Nail Studio" },
-      {
-        name: "description",
-        content: "Consulte, remarque ou cancele seus agendamentos pelo número de WhatsApp usado",
-      },
-    ],
+    meta: pageMeta(
+      "Meus agendamentos",
+      "Consulte, remarque ou cancele seus agendamentos pelo número de WhatsApp usado.",
+    ),
   }),
   component: MyAppointmentsPage,
 });

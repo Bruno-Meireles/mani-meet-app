@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu, X, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { siteConfig } from "@/config/site";
 
 const navItems = [
   { to: "/", label: "Início" },
@@ -22,7 +23,7 @@ export function Header() {
           className="flex items-center gap-2 text-xl font-serif font-semibold tracking-tight text-foreground"
         >
           <Sparkles className="h-5 w-5 text-primary" />
-          <span>Nail Studio</span>
+          <span>{siteConfig.name}</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">

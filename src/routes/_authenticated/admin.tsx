@@ -34,17 +34,14 @@ import {
 import { formatDateBR, formatTime } from "@/lib/appointments.utils";
 import type { AppointmentStatus } from "@/lib/appointments.schemas";
 import { toast } from "sonner";
+import { pageMeta, siteConfig } from "@/config/site";
 import { ChevronLeft, ChevronRight, LogOut, Trash2, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Painel Administrativo — Nail Studio" },
-      { name: "description", content: "Gerencie agendamentos do Nail Studio." },
-      { property: "og:title", content: "Painel Administrativo — Nail Studio" },
-      { property: "og:description", content: "Gerencie agendamentos do Nail Studio." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      ...pageMeta("Painel Administrativo", `Gerencie agendamentos do ${siteConfig.name}.`),
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: AdminPage,
@@ -136,7 +133,7 @@ function AdminPage() {
           <h1 className="flex min-w-0 items-center gap-2 truncate font-serif text-lg font-semibold tracking-tight sm:text-xl">
             <Sparkles className="h-5 w-5 shrink-0 text-primary" />
             <span className="truncate">
-              Nail Studio{" "}
+              {siteConfig.name}{" "}
               <span className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-primary">
                 · Painel
               </span>

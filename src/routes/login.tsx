@@ -5,17 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
+import { pageMeta, siteConfig } from "@/config/site";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login — Nail Studio" },
-      { name: "description", content: "Acesso administrativo do Nail Studio." },
-      { property: "og:title", content: "Login — Nail Studio" },
-      { property: "og:description", content: "Acesso administrativo do Nail Studio." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      ...pageMeta("Login", `Acesso administrativo do ${siteConfig.name}.`),
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: LoginPage,
@@ -113,9 +111,7 @@ function LoginPage() {
           </div>
         </div>
       </main>
-      <footer className="border-t border-border bg-background px-6 py-12 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Nail Studio. Todos os direitos reservados.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

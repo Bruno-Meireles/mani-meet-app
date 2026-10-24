@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AgendarRouteImport } from './routes/agendar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusAgendamentosRouteImport } from './routes/meus-agendamentos'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicSendRemindersRouteImport } from './routes/api/public/send-reminders'
@@ -42,6 +43,11 @@ const MeusAgendamentosRoute = MeusAgendamentosRouteImport.update({
   path: '/meus-agendamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/agendar': typeof AgendarRoute
   '/login': typeof LoginRoute
   '/meus-agendamentos': typeof MeusAgendamentosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/agendar': typeof AgendarRoute
   '/login': typeof LoginRoute
   '/meus-agendamentos': typeof MeusAgendamentosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/agendar': typeof AgendarRoute
   '/login': typeof LoginRoute
   '/meus-agendamentos': typeof MeusAgendamentosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
     | '/agendar'
     | '/login'
     | '/meus-agendamentos'
+    | '/privacidade'
     | '/sobre'
     | '/admin'
     | '/api/public/send-reminders'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/agendar'
     | '/login'
     | '/meus-agendamentos'
+    | '/privacidade'
     | '/sobre'
     | '/admin'
     | '/api/public/send-reminders'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/agendar'
     | '/login'
     | '/meus-agendamentos'
+    | '/privacidade'
     | '/sobre'
     | '/_authenticated/admin'
     | '/api/public/send-reminders'
@@ -124,6 +136,7 @@ export interface RootRouteChildren {
   AgendarRoute: typeof AgendarRoute
   LoginRoute: typeof LoginRoute
   MeusAgendamentosRoute: typeof MeusAgendamentosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   SobreRoute: typeof SobreRoute
   ApiPublicSendRemindersRoute: typeof ApiPublicSendRemindersRoute
 }
@@ -163,6 +176,13 @@ declare module '@tanstack/react-router' {
       path: '/meus-agendamentos'
       fullPath: '/meus-agendamentos'
       preLoaderRoute: typeof MeusAgendamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sobre': {
@@ -206,6 +226,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgendarRoute: AgendarRoute,
   LoginRoute: LoginRoute,
   MeusAgendamentosRoute: MeusAgendamentosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   SobreRoute: SobreRoute,
   ApiPublicSendRemindersRoute: ApiPublicSendRemindersRoute,
 }

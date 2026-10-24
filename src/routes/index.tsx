@@ -1,26 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Sparkles, Clock, Calendar, Heart } from "lucide-react";
+import { pageMeta, siteConfig } from "@/config/site";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "Nail Studio — Manicure e Nail Art" },
-      {
-        name: "description",
-        content:
-          "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade.",
-      },
-      { property: "og:title", content: "Nail Studio — Manicure e Nail Art" },
-      {
-        property: "og:description",
-        content:
-          "Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com praticidade.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta(undefined),
   }),
   component: HomePage,
 });
@@ -74,21 +61,21 @@ function HomePage() {
             <div className="text-center md:text-left">
               <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/70 px-5 py-2 text-xs font-medium uppercase tracking-[0.2em] text-primary">
                 <Sparkles className="h-4 w-4" />
-                <span>Agendamento online</span>
+                <span>{siteConfig.home.heroBadge}</span>
               </div>
               <h1 className="font-serif text-5xl font-semibold leading-[1.1] tracking-tight text-foreground md:text-7xl">
-                Cuidado e beleza para <span className="italic text-primary">suas unhas</span>
+                {siteConfig.home.heroTitleStart}{" "}
+                <span className="italic text-primary">{siteConfig.home.heroTitleHighlight}</span>
               </h1>
               <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:mx-0">
-                Agende seu horário de manicure, esmaltação em gel, alongamento e nail art com
-                praticidade e segurança.
+                {siteConfig.home.heroText}
               </p>
               <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row md:justify-start">
                 <Button asChild size="lg">
                   <Link to="/agendar">Agendar agora</Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link to="/sobre">Conhecer o studio</Link>
+                  <Link to="/sobre">Conhecer o espaço</Link>
                 </Button>
               </div>
             </div>
@@ -163,9 +150,7 @@ function HomePage() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-border bg-background px-6 py-12 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Nail Studio. Todos os direitos reservados.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
+import { siteConfig } from "@/config/site";
 
 /**
  * Lembrete de véspera por e-mail (Resend). Deve ser chamado 1x/dia por um agendador
@@ -22,7 +23,7 @@ async function sendReminders({ request }: { request: Request }) {
   }
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
+  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: siteConfig.timezone }).format(
     new Date(Date.now() + 86_400_000),
   );
 
@@ -47,7 +48,7 @@ async function sendReminders({ request }: { request: Request }) {
         from,
         to: a.client_email,
         subject: `Lembrete: ${service} amanhã às ${time}`,
-        html: `<p>Olá, ${a.client_name}!</p><p>Passando para lembrar do seu horário de <strong>${service}</strong> amanhã, às <strong>${time}</strong>.</p><p>Precisa remarcar ou cancelar? Acesse "Meus agendamentos" no nosso site.</p><p>Até lá! 💅</p>`,
+        html: `<p>Olá, ${a.client_name}!</p><p>Passando para lembrar do seu horário de <strong>${service}</strong> amanhã, às <strong>${time}</strong>.</p><p>Precisa remarcar ou cancelar? Acesse "Meus agendamentos" em <a href="${siteConfig.url}/meus-agendamentos">${siteConfig.url}</a>.</p><p>Até lá!<br/>${siteConfig.name} 💅</p>`,
       }),
     });
     if (res.ok) {

@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createAppointmentSchema, updateAppointmentSchema } from "./appointments.schemas";
+import { siteConfig } from "@/config/site";
 import { generateTimeSlots, CLIENT_CHANGE_MIN_HOURS } from "./appointments.utils";
 import type { Service, Appointment } from "./appointments.schemas";
 
@@ -25,7 +26,7 @@ function createPublicClient() {
   });
 }
 
-const SALON_TZ = "America/Sao_Paulo";
+const SALON_TZ = siteConfig.timezone;
 
 /** Data de hoje (YYYY-MM-DD) no fuso do salão, independente do fuso do servidor. */
 function todayInSalonTz(offsetDays = 0) {

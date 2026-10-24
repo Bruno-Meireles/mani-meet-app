@@ -1,28 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { MapPin, Clock, Phone, Instagram } from "lucide-react";
+import { pageMeta, siteConfig } from "@/config/site";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
-    meta: [
-      { title: "Sobre — Nail Studio" },
-      {
-        name: "description",
-        content: "Conheça o Nail Studio, nosso espaço de manicure e cuidados com as unhas.",
-      },
-      { property: "og:title", content: "Sobre — Nail Studio" },
-      {
-        property: "og:description",
-        content: "Conheça o Nail Studio, nosso espaço de manicure e cuidados com as unhas.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta("Sobre", `Conheça o ${siteConfig.name}, nosso espaço de cuidados com as unhas.`),
   }),
   component: AboutPage,
 });
 
 function AboutPage() {
+  const { name, about, address, contact, openingHoursText } = siteConfig;
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -30,7 +20,7 @@ function AboutPage() {
         <div className="container mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <h1 className="font-serif text-3xl font-semibold tracking-tight text-foreground md:text-5xl">
-              Sobre o studio
+              Sobre o {name}
             </h1>
             <p className="mt-4 text-muted-foreground">
               Um espaço dedicado ao cuidado e à beleza das suas unhas.
@@ -39,52 +29,62 @@ function AboutPage() {
 
           <div className="grid gap-10 md:grid-cols-2">
             <div className="space-y-6">
-              <p className="leading-relaxed text-foreground">
-                No Nail Studio, cada atendimento é pensado para oferecer uma experiência relaxante e
-                resultados impecáveis. Trabalhamos com técnicas modernas, produtos de qualidade e
-                muita atenção aos detalhes.
-              </p>
-              <p className="leading-relaxed text-foreground">
-                Nossa manicure é especialista em esmaltação em gel, alongamentos, manutenções e nail
-                art. Aqui você encontra um ambiente acolhedor para cuidar de si.
-              </p>
+              {about.paragraphs.map((p) => (
+                <p key={p} className="leading-relaxed text-foreground">
+                  {p}
+                </p>
+              ))}
             </div>
 
             <div className="rounded-3xl border border-border/60 bg-card p-10 shadow-soft">
               <h2 className="mb-6 font-serif text-xl font-semibold">Informações</h2>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-5 w-5 text-primary" />
+                  <MapPin className="mt-0.5 h-5 w-5 text-primary" aria-hidden />
                   <span className="text-sm text-muted-foreground">
-                    Rua das Flores, 123 — Centro
+                    {address.mapsUrl ? (
+                      <a
+                        href={address.mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-foreground"
+                      >
+                        {address.line1}
+                      </a>
+                    ) : (
+                      address.line1
+                    )}
                     <br />
-                    Cidade, Estado
+                    {address.line2}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-5 w-5 text-primary" />
+                  <Clock className="mt-0.5 h-5 w-5 text-primary" aria-hidden />
                   <span className="text-sm text-muted-foreground">
-                    Segunda a sexta: 9h às 19h
-                    <br />
-                    Sábado: 9h às 14h
+                    {openingHoursText.map((line, i) => (
+                      <span key={line}>
+                        {i > 0 && <br />}
+                        {line}
+                      </span>
+                    ))}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Phone className="mt-0.5 h-5 w-5 text-primary" />
-                  <span className="text-sm text-muted-foreground">(11) 99999-9999</span>
+                  <Phone className="mt-0.5 h-5 w-5 text-primary" aria-hidden />
+                  <span className="text-sm text-muted-foreground">{contact.phoneDisplay}</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <Instagram className="mt-0.5 h-5 w-5 text-primary" />
-                  <span className="text-sm text-muted-foreground">@nailstudio</span>
-                </li>
+                {contact.instagram && (
+                  <li className="flex items-start gap-3">
+                    <Instagram className="mt-0.5 h-5 w-5 text-primary" aria-hidden />
+                    <span className="text-sm text-muted-foreground">@{contact.instagram}</span>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
         </div>
       </main>
-      <footer className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Nail Studio. Todos os direitos reservados.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
