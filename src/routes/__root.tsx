@@ -92,12 +92,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BeautySalon",
+          name: siteConfig.name,
+          url: siteConfig.url,
+          description: siteConfig.description,
+          telephone: siteConfig.contact.phoneDisplay,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: siteConfig.address.line1,
+            addressLocality: siteConfig.address.line2,
+            addressCountry: "BR",
+          },
+          ...(siteConfig.contact.instagram
+            ? { sameAs: [`https://instagram.com/${siteConfig.contact.instagram}`] }
+            : {}),
+        }),
       },
     ],
   }),

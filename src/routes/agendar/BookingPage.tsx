@@ -3,7 +3,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { whatsappDigits } from "@/config/site";
+import { siteConfig, whatsappDigits } from "@/config/site";
+import { buildIcs } from "@/lib/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,29 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
+function downloadIcs(c: {
+  serviceName: string;
+  date: string;
+  time: string;
+  durationMinutes: number;
+}) {
+  const ics = buildIcs({
+    uid: `${c.date}-${c.time}-${Date.now()}@${new URL(siteConfig.url).hostname}`,
+    title: `${c.serviceName} — ${siteConfig.name}`,
+    date: c.date,
+    time: c.time,
+    durationMinutes: c.durationMinutes,
+    timeZone: siteConfig.timezone,
+    location: `${siteConfig.address.line1}, ${siteConfig.address.line2}`,
+  });
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "agendamento.ics";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function BookingPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -41,6 +65,8 @@ function BookingPage() {
     dateLabel: string;
     time: string;
     notes?: string;
+    date: string;
+    durationMinutes: number;
   } | null>(null);
 
   const confirmationRef = useRef<HTMLDivElement | null>(null);
@@ -138,6 +164,8 @@ function BookingPage() {
         dateLabel,
         time: data.appointment_time,
         notes: data.notes || "",
+        date: data.appointment_date,
+        durationMinutes: services.find((s) => s.id === data.service_id)?.duration_minutes ?? 60,
       });
       toast.success("Agendamento realizado com sucesso!");
       reset();
@@ -406,9 +434,16 @@ function BookingPage() {
                 </button>
               )}
 
+              <div className="mt-3">
+                <Button variant="outline" size="sm" onClick={() => downloadIcs(confirmed)}>
+                  Adicionar ao calendário
+                </Button>
+              </div>
+
               <Button
                 variant="ghost"
                 size="sm"
+                className="mt-2"
                 onClick={() => {
                   setConfirmed(null);
                 }}

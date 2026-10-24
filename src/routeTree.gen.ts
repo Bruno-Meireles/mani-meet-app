@@ -15,6 +15,8 @@ import { Route as AgendarRouteImport } from './routes/agendar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusAgendamentosRouteImport } from './routes/meus-agendamentos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicSendRemindersRouteImport } from './routes/api/public/send-reminders'
@@ -48,6 +50,16 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
   path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -70,6 +82,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
@@ -80,6 +94,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
@@ -92,6 +108,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/meus-agendamentos': typeof MeusAgendamentosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/public/send-reminders': typeof ApiPublicSendRemindersRoute
@@ -104,6 +122,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/meus-agendamentos'
     | '/privacidade'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/sobre'
     | '/admin'
     | '/api/public/send-reminders'
@@ -114,6 +134,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/meus-agendamentos'
     | '/privacidade'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/sobre'
     | '/admin'
     | '/api/public/send-reminders'
@@ -125,6 +147,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/meus-agendamentos'
     | '/privacidade'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/sobre'
     | '/_authenticated/admin'
     | '/api/public/send-reminders'
@@ -137,6 +161,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MeusAgendamentosRoute: typeof MeusAgendamentosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   ApiPublicSendRemindersRoute: typeof ApiPublicSendRemindersRoute
 }
@@ -185,6 +211,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sobre': {
       id: '/sobre'
       path: '/sobre'
@@ -227,6 +267,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MeusAgendamentosRoute: MeusAgendamentosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   ApiPublicSendRemindersRoute: ApiPublicSendRemindersRoute,
 }

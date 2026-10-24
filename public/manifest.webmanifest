@@ -1,0 +1,11 @@
+{
+  "name": "Nail Studio — Agendamento",
+  "short_name": "Nail Studio",
+  "description": "Agende seu horário de manicure online.",
+  "start_url": "/agendar",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d9778f",
+  "lang": "pt-BR",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
