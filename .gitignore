@@ -47,3 +47,6 @@ supabase/.branches/
 
 # Claude Code local state
 .claude/worktrees/
+
+# Vercel
+.vercel

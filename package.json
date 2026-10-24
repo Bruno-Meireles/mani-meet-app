@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
-    "deploy": "npm run build && wrangler deploy --config .output/server/wrangler.json",
+    "deploy:cloudflare": "npm run build && wrangler deploy --config .output/server/wrangler.json",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write ."
