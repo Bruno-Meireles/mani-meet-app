@@ -27,12 +27,25 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-background group/calendar p-3 [--cell-size:2.25rem] sm:[--cell-size:2.5rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className,
       )}
       captionLayout={captionLayout}
+      labels={{
+        labelPrevious: () => "Mês anterior",
+        labelNext: () => "Próximo mês",
+        labelDayButton: (date, modifiers) =>
+          [
+            format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR }),
+            modifiers["today"] ? "hoje" : "",
+            modifiers["selected"] ? "selecionado" : "",
+            modifiers["disabled"] ? "indisponível" : "",
+          ]
+            .filter(Boolean)
+            .join(", "),
+      }}
       formatters={{
         formatMonthDropdown: (date) => format(date, "MMM", { locale: ptBR }),
         ...formatters,

@@ -307,7 +307,7 @@ function BookingPage() {
             </h2>
             <div className="mt-6 grid gap-8 md:grid-cols-2">
               <div>
-                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-3">
+                <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-1 sm:p-3">
                   <Calendar
                     mode="single"
                     selected={selectedDate}

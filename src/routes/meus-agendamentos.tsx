@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { Header } from "@/features/site-shell/Header";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -197,10 +198,16 @@ function MyAppointmentsPage() {
           </p>
         </div>
         <div className="mx-auto max-w-xl rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+          <Label htmlFor="lookup-phone">WhatsApp usado no agendamento</Label>
           <Input
+            id="lookup-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            className="mt-2"
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
-            placeholder="Digite o WhatsApp usado (ex: 11999998888)"
+            placeholder="Ex.: 11999998888"
           />
           <Button className="mt-3 w-full" onClick={() => search()}>
             Buscar
