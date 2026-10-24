@@ -66,6 +66,15 @@ test.describe("tela de agendamento", () => {
     ).toBeDisabled();
   });
 
+  test("o serviço é escolhido em um dropdown compacto, sem cartões", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/agendar");
+    await expect(page.getByRole("combobox", { name: "Serviço" })).toBeVisible();
+    await expect(page.getByRole("radiogroup")).toHaveCount(0);
+    const calendarTop = await page.getByRole("heading", { name: "Dia e horário" }).boundingBox();
+    expect(calendarTop?.y).toBeLessThan(700);
+  });
+
   test("campos de dados têm rótulo associado", async ({ page }) => {
     await page.goto("/agendar");
     await expect(page.getByLabel("Nome completo")).toBeVisible();

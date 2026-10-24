@@ -16,23 +16,26 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: process.env["PLAYWRIGHT_BASE_URL"] ?? `http://localhost:${PORT}`,
     // Usa o Chrome instalado no sistema; não baixa navegadores. Em CI, defina PLAYWRIGHT_CHANNEL=.
     channel: process.env["PLAYWRIGHT_CHANNEL"] ?? "chrome",
     // Para depurar uma falha: PLAYWRIGHT_TRACE=retain-on-failure npm run test:e2e
     trace: (process.env["PLAYWRIGHT_TRACE"] as "retain-on-failure" | undefined) ?? "off",
   },
-  webServer: {
-    command: `npx vite dev --port ${PORT} --strictPort`,
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: true,
-    timeout: 120_000,
-    env: {
-      VITE_SUPABASE_URL: "http://127.0.0.1:9",
-      VITE_SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
-      SUPABASE_URL: "http://127.0.0.1:9",
-      SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
-      SUPABASE_SERVICE_ROLE_KEY: "test-service-key",
-    },
-  },
+  // PLAYWRIGHT_BASE_URL=https://seu-site npm run test:e2e roda contra um site publicado, sem subir o servidor local.
+  webServer: process.env["PLAYWRIGHT_BASE_URL"]
+    ? undefined
+    : {
+        command: `npx vite dev --port ${PORT} --strictPort`,
+        url: `http://localhost:${PORT}`,
+        reuseExistingServer: true,
+        timeout: 120_000,
+        env: {
+          VITE_SUPABASE_URL: "http://127.0.0.1:9",
+          VITE_SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
+          SUPABASE_URL: "http://127.0.0.1:9",
+          SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
+          SUPABASE_SERVICE_ROLE_KEY: "test-service-key",
+        },
+      },
 });

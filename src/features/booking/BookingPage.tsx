@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   createAppointmentSchema,
   type CreateAppointmentInput,
 } from "@/domain/appointments/schemas";
@@ -233,6 +240,7 @@ function BookingPage() {
     setValue("appointment_time", "");
   };
 
+  const chosenService = services.find((x) => x.id === selectedService);
   const formId = "booking-form";
   const stepTitle = "flex items-center gap-3 font-serif text-xl font-semibold";
   const stepBadge =
@@ -259,42 +267,35 @@ function BookingPage() {
               <span className={stepBadge}>1</span> Escolha o serviço
             </h2>
             <input type="hidden" {...register("service_id")} />
-            <div className="mt-6 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Serviço">
-              {services.map((service) => {
-                const active = service.id === selectedService;
-                return (
-                  <button
-                    key={service.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => handleServiceChange(service.id)}
-                    className={`rounded-2xl border p-4 text-left transition-all ${
-                      active
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                        : "border-border bg-background hover:border-primary/40 hover:bg-accent/40"
-                    }`}
-                  >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="font-medium">{service.name}</span>
-                      {active && <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden />}
-                    </span>
-                    {service.description && (
-                      <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
-                        {service.description}
-                      </span>
-                    )}
-                    <span className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" aria-hidden /> {service.duration_minutes} min
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        {formatCurrency(service.price)}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="mt-5">
+              <Label htmlFor="service-select" className="sr-only">
+                Serviço
+              </Label>
+              <Select value={selectedService} onValueChange={handleServiceChange}>
+                <SelectTrigger id="service-select" className="h-12 rounded-xl text-base">
+                  <SelectValue placeholder="Selecione um serviço" />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} · {service.duration_minutes} min ·{" "}
+                      {formatCurrency(service.price)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {chosenService && (
+                <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" aria-hidden /> {chosenService.duration_minutes}{" "}
+                    min
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {formatCurrency(chosenService.price)}
+                  </span>
+                  {chosenService.description && <span>{chosenService.description}</span>}
+                </p>
+              )}
             </div>
             {errors.service_id && (
               <p className="mt-3 text-xs text-destructive">{errors.service_id.message}</p>
