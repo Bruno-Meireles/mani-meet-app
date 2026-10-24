@@ -37,7 +37,7 @@ import {
   listAllServices,
   createAppointment,
   getAvailableSlots,
-} from "@/lib/appointments.functions";
+} from "@/server/api";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 

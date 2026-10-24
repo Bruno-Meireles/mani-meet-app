@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format, startOfDay } from "date-fns";
-import { getSchedule } from "@/lib/appointments.functions";
-import { DEFAULT_HOURS, isDayBookable } from "@/lib/availability";
+import { getSchedule } from "@/server/api";
+import { DEFAULT_HOURS, isDayBookable } from "@/domain/scheduling/availability";
 
 /** Horários de funcionamento e folgas, com função para desabilitar dias no calendário. */
 export function useSchedule() {

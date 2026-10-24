@@ -31,9 +31,9 @@ import {
   listAppointments,
   updateAppointment,
   deleteAppointment,
-} from "@/lib/appointments.functions";
-import { formatDateBR, formatTime } from "@/lib/appointments.utils";
-import type { AppointmentStatus } from "@/lib/appointments.schemas";
+} from "@/server/api";
+import { formatDateBR, formatTime } from "@/shared/format";
+import type { AppointmentStatus } from "@/domain/appointments/schemas";
 import { toast } from "sonner";
 import { pageMeta, siteConfig } from "@/config/site";
 import { ChevronLeft, ChevronRight, LogOut, Trash2, CheckCircle2 } from "lucide-react";

@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { siteConfig, whatsappDigits } from "@/config/site";
-import { buildIcs } from "@/lib/calendar";
+import { buildIcs } from "@/domain/scheduling/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,16 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createAppointmentSchema, type CreateAppointmentInput } from "@/lib/appointments.schemas";
+import { createAppointmentSchema, type CreateAppointmentInput } from "@/domain/appointments/schemas";
 import {
   listServices,
   getAvailableSlots,
   createAppointment,
   getProfile,
-} from "@/lib/appointments.functions";
-import { formatCurrency } from "@/lib/appointments.utils";
-import { generateAllSlots } from "@/lib/availability";
-import { useSchedule } from "@/lib/use-schedule";
+} from "@/server/api";
+import { formatCurrency } from "@/shared/format";
+import { generateAllSlots } from "@/domain/scheduling/availability";
+import { useSchedule } from "@/shared/use-schedule";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -25,9 +25,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { listAllServices, upsertService, deleteService } from "@/lib/appointments.functions";
-import { formatCurrency } from "@/lib/appointments.utils";
-import type { Service } from "@/lib/appointments.schemas";
+import { listAllServices, upsertService, deleteService } from "@/server/api";
+import { formatCurrency } from "@/shared/format";
+import type { Service } from "@/domain/appointments/schemas";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 

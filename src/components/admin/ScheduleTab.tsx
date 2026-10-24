@@ -10,9 +10,9 @@ import {
   getScheduleAdmin,
   removeBlockedDate,
   saveBusinessHours,
-} from "@/lib/appointments.functions";
-import { WEEKDAY_LABELS, type DayHours } from "@/lib/availability";
-import { formatDateBR } from "@/lib/appointments.utils";
+} from "@/server/api";
+import { WEEKDAY_LABELS, type DayHours } from "@/domain/scheduling/availability";
+import { formatDateBR } from "@/shared/format";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 

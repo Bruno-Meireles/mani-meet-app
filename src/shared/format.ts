@@ -1,9 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-/** Antecedência mínima (em horas) para a cliente cancelar/reagendar sozinha. */
-export const CLIENT_CHANGE_MIN_HOURS = 12;
-
 export function formatDateBR(dateString: string) {
   return format(parseISO(dateString), "dd/MM/yyyy", { locale: ptBR });
 }

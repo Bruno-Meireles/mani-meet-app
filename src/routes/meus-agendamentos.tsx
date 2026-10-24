@@ -27,16 +27,16 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { pageMeta } from "@/config/site";
-import { useSchedule } from "@/lib/use-schedule";
+import { useSchedule } from "@/shared/use-schedule";
 import { useServerFn } from "@tanstack/react-start";
 import {
   getAppointmentsByPhone,
   getAvailableSlots,
   cancelMyAppointment,
   rescheduleMyAppointment,
-} from "@/lib/appointments.functions";
-import { CLIENT_CHANGE_MIN_HOURS } from "@/lib/appointments.utils";
-import type { Appointment } from "@/lib/appointments.schemas";
+} from "@/server/api";
+import { CLIENT_CHANGE_MIN_HOURS } from "@/domain/appointments/change-policy";
+import type { Appointment } from "@/domain/appointments/schemas";
 
 const resolveErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {

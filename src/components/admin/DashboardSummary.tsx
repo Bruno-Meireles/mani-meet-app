@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarCheck, Wallet, UserPlus, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getDashboardStats } from "@/lib/appointments.functions";
-import { formatCurrency } from "@/lib/appointments.utils";
+import { getDashboardStats } from "@/server/api";
+import { formatCurrency } from "@/shared/format";
 
 function toWhatsappUrl(phone: string, name: string, time: string, service: string) {
   let digits = phone.replace(/\D/g, "").replace(/^0+/, "");
