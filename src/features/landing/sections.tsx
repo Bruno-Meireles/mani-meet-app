@@ -116,7 +116,7 @@ export function Services() {
 
   return (
     <section className="border-t border-border px-5 py-14 md:px-6 md:py-24" id="servicos">
-      <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-[4fr_8fr] md:gap-16">
+      <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] md:gap-16">
         <div className="flex flex-col gap-3.5">
           <p className={eyebrow}>Serviços &amp; preços</p>
           <h2 className="font-serif text-[34px] leading-[1.15] md:text-5xl">O cardápio</h2>
@@ -129,7 +129,7 @@ export function Services() {
             <Link
               key={s.key}
               to="/agendar"
-              className="group grid grid-cols-[1fr_auto] items-baseline gap-x-5 gap-y-1 border-b border-border py-5 first:border-t first:border-foreground md:grid-cols-[48px_1fr_auto_140px] md:py-6"
+              className="group grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-5 gap-y-1 border-b border-border py-5 first:border-t first:border-foreground md:grid-cols-[48px_minmax(0,1fr)_auto] md:py-6 lg:grid-cols-[48px_minmax(0,1fr)_auto_140px]"
             >
               <span className="hidden text-[13px] font-semibold tabular-nums text-muted-foreground md:block">
                 {String(i + 1).padStart(2, "0")}
@@ -153,7 +153,7 @@ export function Services() {
               ) : (
                 <span />
               )}
-              <span className="hidden items-center gap-1.5 justify-self-end text-[15px] font-semibold text-primary md:flex">
+              <span className="hidden items-center gap-1.5 justify-self-end text-[15px] font-semibold text-primary lg:flex">
                 Ver horários
                 <ArrowRight
                   className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
