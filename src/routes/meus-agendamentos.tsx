@@ -102,7 +102,7 @@ function RescheduleDialog({
             {appointment?.services?.name} — escolha uma nova data e horário.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex justify-center rounded-2xl border border-border/60 bg-background p-3">
+        <div className="flex justify-center rounded-md border border-border bg-background p-3">
           <Calendar
             mode="single"
             selected={date}
@@ -127,7 +127,7 @@ function RescheduleDialog({
                     key={slot}
                     type="button"
                     onClick={() => setTime(slot)}
-                    className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
+                    className={`rounded-md border px-3 py-2.5 text-sm transition-colors ${
                       time === slot
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border bg-card hover:border-primary/50"
@@ -188,16 +188,16 @@ function MyAppointmentsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="container mx-auto flex-1 px-6 py-16">
-        <div className="mb-10 text-center">
-          <h1 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-            Meus agendamentos
+      <main className="container mx-auto flex-1 px-5 py-12 md:px-6 md:py-20">
+        <div className="mx-auto mb-10 max-w-xl">
+          <h1 className="font-serif text-[38px] leading-[1.1] md:text-[56px]">
+            Meus <em>agendamentos</em>
           </h1>
           <p className="mt-3 text-muted-foreground">
             Consulte, remarque ou cancele seus horários pelo WhatsApp usado no agendamento.
           </p>
         </div>
-        <div className="mx-auto max-w-xl rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+        <div className="mx-auto max-w-xl">
           <Label htmlFor="lookup-phone">WhatsApp usado no agendamento</Label>
           <Input
             id="lookup-phone"
@@ -213,13 +213,13 @@ function MyAppointmentsPage() {
             Buscar
           </Button>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-8">
             {appointments.map((appointment) => (
               <div
                 key={appointment.id}
-                className="rounded-2xl border border-border/60 bg-background p-5"
+                className="border-t border-foreground py-5 last:border-b last:border-border"
               >
-                <div className="font-serif text-lg font-semibold">
+                <div className="font-serif text-2xl leading-tight">
                   {appointment.client_name} — {appointment.services?.name ?? ""}
                 </div>
                 <div>

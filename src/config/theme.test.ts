@@ -6,8 +6,8 @@ describe("themeToCss", () => {
     const css = themeToCss(resolveTheme({ preset: "rose" }));
     expect(css).toContain(":root{");
     expect(css).toContain(".dark{");
-    expect(css).toContain("--primary:oklch(0.6 0.1 8)");
-    expect(css).toContain("--radius:1rem");
+    expect(css).toContain("--primary:oklch(0.42 0.12 18)");
+    expect(css).toContain("--radius:0.5rem");
   });
 
   it("todos os presets geram o mesmo conjunto de variáveis", () => {
@@ -25,17 +25,17 @@ describe("themeToCss", () => {
     const rose = themeToCss(resolveTheme({ preset: "rose" }));
     const lilac = themeToCss(resolveTheme({ preset: "lilac" }));
     expect(rose).not.toEqual(lilac);
-    expect(lilac).toContain("--primary:oklch(0.6 0.1 305)");
+    expect(lilac).toContain("--primary:oklch(0.42 0.1 305)");
   });
 
   it("permite sobrescrever o matiz sem trocar de preset", () => {
     const css = themeToCss(resolveTheme({ preset: "rose", hue: 200 }));
-    expect(css).toContain("--primary:oklch(0.6 0.1 200)");
+    expect(css).toContain("--primary:oklch(0.42 0.12 200)");
   });
 
   it("limita valores fora da faixa", () => {
     const css = themeToCss(resolveTheme({ preset: "rose", hue: 999, chroma: 5 }));
-    expect(css).toContain("--primary:oklch(0.6 0.2 360)");
+    expect(css).toContain("--primary:oklch(0.42 0.2 360)");
   });
 
   it("monta as fontes do Google sem duplicar famílias", () => {

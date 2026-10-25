@@ -19,23 +19,15 @@ const TABS = [
 /** Casca do painel: cabeçalho com a marca, atalho para o site e abas por área. */
 export function AdminShell() {
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/90 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-serif font-semibold text-primary-foreground"
-              aria-hidden
-            >
-              {siteConfig.name.charAt(0)}
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 px-4 backdrop-blur-md md:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 md:h-[84px]">
+          <h1 className="flex min-w-0 items-baseline gap-3 truncate font-serif text-[26px] leading-none md:text-[30px]">
+            <span className="truncate">{siteConfig.name}</span>
+            <span className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Painel
             </span>
-            <h1 className="truncate font-serif text-lg font-semibold tracking-tight">
-              {siteConfig.name}
-              <span className="ml-2 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                Painel
-              </span>
-            </h1>
-          </div>
+          </h1>
           <div className="flex shrink-0 items-center gap-1">
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link to="/" target="_blank">
@@ -52,12 +44,12 @@ export function AdminShell() {
       <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <div className="mx-auto max-w-6xl">
           <Tabs defaultValue="agenda">
-            <TabsList className="mb-8 h-auto w-full justify-start gap-1 overflow-x-auto rounded-2xl bg-card p-1.5 shadow-soft sm:w-auto">
+            <TabsList className="mb-8 h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b border-border bg-transparent p-0 sm:mb-10">
               {TABS.map(({ value, label, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="gap-2 rounded-xl px-4 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="-mb-px gap-2 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 text-[15px] font-semibold text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
                 >
                   <Icon className="h-4 w-4" aria-hidden /> {label}
                 </TabsTrigger>

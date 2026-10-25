@@ -106,7 +106,7 @@ export function ServicesTab() {
   if (isLoading) return <p className="text-muted-foreground">Carregando serviços...</p>;
   if (error)
     return (
-      <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+      <div className="border-y border-border py-6">
         <p className="font-medium">Não foi possível carregar os serviços.</p>
       </div>
     );
@@ -176,7 +176,7 @@ export function ServicesTab() {
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 p-4">
+              <div className="flex items-center justify-between gap-3 rounded-md border border-border p-4">
                 <Label htmlFor="service-active" className="cursor-pointer">
                   Visível na página de agendamento
                 </Label>
@@ -194,15 +194,15 @@ export function ServicesTab() {
         </Dialog>
       </div>
 
-      <div className="space-y-4">
+      <div className="border-t border-foreground">
         {services.map((service) => (
           <div
             key={service.id}
-            className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 border-b border-border py-5 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="break-words font-serif text-lg font-semibold">{service.name}</p>
+                <p className="break-words font-serif text-2xl leading-tight">{service.name}</p>
                 {!service.is_active && <Badge variant="outline">Oculto</Badge>}
               </div>
               <p className="text-sm text-muted-foreground">

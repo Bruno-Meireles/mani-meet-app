@@ -16,10 +16,13 @@ function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="flex-1 px-4 py-16">
-        <div className="container mx-auto max-w-4xl">
-          <div className="mb-12 text-center">
-            <h1 className="font-serif text-3xl font-semibold tracking-tight text-foreground md:text-5xl">
+      <main className="flex-1 px-5 py-12 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-12">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Sobre o estúdio
+            </p>
+            <h1 className="font-serif text-[38px] leading-[1.1] text-foreground md:text-[64px]">
               Sobre o {name}
             </h1>
             <p className="mt-4 text-muted-foreground">
@@ -28,7 +31,7 @@ function AboutPage() {
           </div>
 
           <div className="grid gap-10 md:grid-cols-2">
-            <div className="space-y-6">
+            <div className="space-y-6 text-[17px]">
               {about.paragraphs.map((p) => (
                 <p key={p} className="leading-relaxed text-foreground">
                   {p}
@@ -36,8 +39,8 @@ function AboutPage() {
               ))}
             </div>
 
-            <div className="rounded-3xl border border-border/60 bg-card p-10 shadow-soft">
-              <h2 className="mb-6 font-serif text-xl font-semibold">Informações</h2>
+            <div className="border-t border-foreground pt-6">
+              <h2 className="mb-6 font-serif text-2xl">Informações</h2>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <MapPin className="mt-0.5 h-5 w-5 text-primary" aria-hidden />

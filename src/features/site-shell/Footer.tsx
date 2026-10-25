@@ -8,10 +8,10 @@ const itemClass = "inline-flex items-start gap-2 transition-colors hover:text-fo
 export function Footer() {
   const { name, tagline, contact, address, openingHoursText } = siteConfig;
   return (
-    <footer className="border-t border-border bg-cream px-6 pb-28 pt-16 text-sm text-muted-foreground md:pb-10">
+    <footer className="border-t border-border bg-background px-6 pb-28 pt-14 text-sm text-muted-foreground md:pb-10">
       <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-4">
         <div className="md:col-span-1">
-          <p className="font-serif text-2xl font-semibold text-foreground">{name}</p>
+          <p className="font-serif text-2xl text-foreground">{name}</p>
           <p className="mt-2 leading-relaxed">{tagline}</p>
         </div>
 
@@ -96,7 +96,7 @@ export function Footer() {
         </nav>
       </div>
 
-      <div className="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-2 border-t border-border/70 pt-6 text-xs md:flex-row">
+      <div className="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-2 border-t border-border pt-6 text-xs md:flex-row">
         <p>
           © {new Date().getFullYear()} {name}. Todos os direitos reservados.
         </p>

@@ -185,7 +185,7 @@ export function ClientsTab() {
   if (isLoading) return <p className="text-muted-foreground">Carregando clientes...</p>;
   if (error)
     return (
-      <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+      <div className="border-y border-border py-6">
         <p className="font-medium">Não foi possível carregar os clientes.</p>
       </div>
     );
@@ -332,20 +332,20 @@ export function ClientsTab() {
       </div>
 
       {clients.length === 0 ? (
-        <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+        <div className="border-y border-border py-6">
           <p className="text-muted-foreground">
             Nenhum cliente ainda. Clientes entram aqui automaticamente ao agendar pelo site.
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="border-t border-foreground">
           {(clients as Client[]).map((client) => (
             <div
               key={client.id}
-              className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 border-b border-border py-5 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <p className="break-words font-serif text-lg font-semibold">{client.name}</p>
+                <p className="break-words font-serif text-2xl leading-tight">{client.name}</p>
                 <p className="break-words text-sm text-muted-foreground">{client.phone}</p>
                 {client.email && (
                   <p className="break-words text-xs text-muted-foreground">{client.email}</p>

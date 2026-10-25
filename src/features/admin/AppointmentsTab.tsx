@@ -110,18 +110,18 @@ export function AppointmentsTab() {
       <DashboardSummary />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h2 className="font-serif text-2xl sm:text-3xl">
           {format(weekStart, "dd")} a {format(weekEnd, "dd 'de' MMMM", { locale: ptBR })}
         </h2>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="rounded-full" onClick={goToToday}>
+          <Button variant="outline" size="sm" onClick={goToToday}>
             <CalendarDays className="h-4 w-4" aria-hidden /> Hoje
           </Button>
           <Button
             aria-label="Semana anterior"
             variant="outline"
             size="icon"
-            className="rounded-full"
+
             onClick={() => setCurrentDate(subWeeks(currentDate, 1))}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -130,7 +130,7 @@ export function AppointmentsTab() {
             aria-label="Próxima semana"
             variant="outline"
             size="icon"
-            className="rounded-full"
+
             onClick={() => setCurrentDate(addWeeks(currentDate, 1))}
           >
             <ChevronRight className="h-4 w-4" />
@@ -141,7 +141,7 @@ export function AppointmentsTab() {
       {isLoading ? (
         <p className="text-muted-foreground">Carregando agendamentos...</p>
       ) : error ? (
-        <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-soft">
+        <div className="border-y border-border py-6">
           <p className="font-medium">Não foi possível carregar os agendamentos.</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Esta conta não tem permissão de administradora. Saia e entre com a conta autorizada.
@@ -149,7 +149,7 @@ export function AppointmentsTab() {
         </div>
       ) : (
         <>
-          <div className="mb-8 grid grid-cols-7 gap-1.5 sm:gap-3">
+          <div className="mb-8 grid grid-cols-7 border-l border-t border-foreground sm:mb-10">
             {days.map((day) => {
               const iso = format(day, ISO);
               const count = appointments.filter(
@@ -164,18 +164,18 @@ export function AppointmentsTab() {
                   onClick={() => setSelectedDate(day)}
                   aria-pressed={selected}
                   aria-label={`${format(day, "EEEE, dd 'de' MMMM", { locale: ptBR })}, ${count} agendamento${count === 1 ? "" : "s"}`}
-                  className={`min-w-0 rounded-2xl border px-1 py-3 text-center transition-colors sm:p-4 ${
+                  className={`min-w-0 border-b border-r px-1 py-3 text-center transition-colors sm:py-4 ${
                     selected
-                      ? "border-primary bg-primary text-primary-foreground shadow-soft"
+                      ? "border-primary bg-primary text-primary-foreground"
                       : today
-                        ? "border-primary/50 bg-card hover:bg-accent/40"
-                        : "border-border/60 bg-card hover:border-primary/40"
+                        ? "border-border bg-secondary/60 hover:bg-secondary"
+                        : "border-border hover:bg-muted"
                   }`}
                 >
                   <span className="block truncate text-[10px] font-medium uppercase opacity-80 sm:text-xs">
                     {format(day, "EEE", { locale: ptBR })}
                   </span>
-                  <span className="mt-0.5 block font-serif text-lg font-semibold sm:text-2xl">
+                  <span className="mt-0.5 block font-serif text-lg sm:text-2xl">
                     {format(day, "dd")}
                   </span>
                   <span
@@ -194,27 +194,29 @@ export function AppointmentsTab() {
             })}
           </div>
 
-          <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-soft sm:p-8">
-            <h3 className="mb-6 font-serif text-xl font-semibold capitalize sm:text-2xl">
+          <div>
+            <h3 className="mb-2 font-serif text-[28px] leading-[1.15] first-letter:uppercase sm:text-4xl">
               {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
             </h3>
             {dayRows.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
+              <p className="border-t border-foreground pt-4 text-muted-foreground">
                 Nenhum agendamento neste dia.
               </p>
             ) : (
-              <ul className="space-y-3">
+              <ul className="border-t border-foreground">
                 {dayRows.map((row) => (
                   <li
                     key={row.id}
-                    className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-background p-4 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-col gap-4 border-b border-border py-5 md:flex-row md:items-center md:justify-between"
                   >
                     <div className="flex min-w-0 items-center gap-4">
-                      <span className="w-16 shrink-0 rounded-xl bg-secondary py-2 text-center font-serif text-lg font-semibold">
+                      <span className="w-16 shrink-0 font-serif text-2xl lining-nums tabular-nums">
                         {formatTime(row.appointment_time)}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate font-medium">{row.client_name}</p>
+                        <p className="truncate font-serif text-2xl leading-tight">
+                          {row.client_name}
+                        </p>
                         <p className="truncate text-sm text-muted-foreground">
                           {row.services?.name ?? "Serviço removido"} · {row.client_phone}
                         </p>

@@ -92,15 +92,15 @@ export function ScheduleTab() {
   return (
     <div className="space-y-12">
       <section>
-        <h2 className="font-serif text-2xl font-semibold">Horário de funcionamento</h2>
+        <h2 className="font-serif text-2xl">Horário de funcionamento</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Define quando as clientes podem agendar. O intervalo (almoço) é opcional.
         </p>
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 border-t border-foreground">
           {hours.map((h) => (
             <div
               key={h.weekday}
-              className="grid items-center gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-soft md:grid-cols-[180px_auto_1fr]"
+              className="grid items-center gap-3 border-b border-border py-4 md:grid-cols-[180px_auto_1fr]"
             >
               <div className="flex items-center gap-3">
                 <Switch
@@ -173,7 +173,7 @@ export function ScheduleTab() {
       </section>
 
       <section>
-        <h2 className="font-serif text-2xl font-semibold">Folgas e datas bloqueadas</h2>
+        <h2 className="font-serif text-2xl">Folgas e datas bloqueadas</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Feriados, férias ou qualquer dia em que não haverá atendimento.
         </p>
@@ -209,14 +209,14 @@ export function ScheduleTab() {
           </Button>
         </form>
 
-        <ul className="mt-6 space-y-2">
+        <ul className="mt-6 border-t border-foreground">
           {(data?.blocked ?? []).length === 0 && (
             <li className="text-sm text-muted-foreground">Nenhuma folga futura cadastrada.</li>
           )}
           {(data?.blocked ?? []).map((b) => (
             <li
               key={b.blocked_date}
-              className="flex items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3 text-sm shadow-soft"
+              className="flex items-center justify-between border-b border-border py-3 text-sm"
             >
               <span>
                 <strong>{formatDateBR(b.blocked_date)}</strong>

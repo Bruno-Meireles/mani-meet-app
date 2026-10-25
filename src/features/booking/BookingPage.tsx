@@ -248,9 +248,8 @@ function BookingPage() {
 
   const chosenService = services.find((x) => x.id === selectedService);
   const formId = "booking-form";
-  const stepTitle = "mb-3 flex items-center gap-2.5 font-serif text-lg font-semibold";
-  const stepBadge =
-    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground";
+  const stepTitle = "mb-4 flex items-baseline gap-3 font-serif text-2xl";
+  const stepBadge = "font-serif text-2xl leading-none text-primary";
   const summaryLine = [
     selectedServiceData?.name,
     selectedDate
@@ -262,14 +261,14 @@ function BookingPage() {
 
   return (
     <SiteLayout showActionBar={false}>
-      <div className="bg-gradient-to-b from-secondary/60 to-background px-6 pb-6 pt-14 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+      <div className="mx-auto max-w-3xl px-6 pb-2 pt-10 md:pt-14">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           Agendamento online
         </p>
-        <h1 className="mt-3 font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+        <h1 className="mt-3 font-serif text-[34px] leading-[1.15] md:text-[56px]">
           Agende seu horário
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+        <p className="mt-3 max-w-xl text-muted-foreground">
           Escolha o serviço, o dia e o horário. Leva menos de um minuto.
         </p>
       </div>
@@ -277,7 +276,7 @@ function BookingPage() {
       <div className="mx-auto max-w-3xl px-6 py-10 pb-32">
         <form id={formId} onSubmit={handleSubmit(onSubmit)} noValidate>
           <input type="hidden" {...register("service_id")} />
-          <div className="space-y-8 rounded-3xl border border-border/60 bg-card p-6 shadow-soft md:p-8">
+          <div className="space-y-10 border-t border-foreground pt-8 md:space-y-12">
             <section>
               <h2 className={stepTitle}>
                 <span className={stepBadge}>1</span> Escolha o serviço
@@ -286,7 +285,7 @@ function BookingPage() {
                 Serviço
               </Label>
               <Select value={selectedService} onValueChange={handleServiceChange}>
-                <SelectTrigger id="service-select" className="h-12 rounded-xl text-base">
+                <SelectTrigger id="service-select" className="h-[52px] bg-card text-base">
                   <SelectValue placeholder="Selecione um serviço" />
                 </SelectTrigger>
                 <SelectContent>
@@ -322,7 +321,7 @@ function BookingPage() {
               <div
                 role="group"
                 aria-label="Próximos dias"
-                className="-mx-2 flex snap-x gap-2 overflow-x-auto px-2 pb-2"
+                className="-mx-6 flex snap-x overflow-x-auto border-t border-foreground pl-6 md:mx-0 md:pl-0"
               >
                 {days.map((d) => {
                   const disabled = isDateDisabled(d);
@@ -335,18 +334,18 @@ function BookingPage() {
                       aria-pressed={active}
                       aria-label={format(d, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                       onClick={() => handleDateSelect(d)}
-                      className={`flex w-16 shrink-0 snap-start flex-col items-center rounded-2xl border px-2 py-3 transition-colors ${
+                      className={`flex w-[68px] shrink-0 snap-start flex-col items-center border-b border-r border-border px-2 py-3 transition-colors ${
                         active
                           ? "border-primary bg-primary text-primary-foreground"
                           : disabled
-                            ? "cursor-not-allowed border-border bg-muted text-muted-foreground opacity-50"
-                            : "border-border bg-background hover:border-primary/50 hover:bg-accent"
+                            ? "cursor-not-allowed text-muted-foreground/60"
+                            : "hover:bg-muted"
                       }`}
                     >
                       <span className="text-[11px] uppercase">
                         {format(d, "EEE", { locale: ptBR })}
                       </span>
-                      <span className="font-serif text-2xl font-semibold leading-tight">
+                      <span className="font-serif text-[28px] leading-tight">
                         {format(d, "dd")}
                       </span>
                       <span className="text-[11px] uppercase">
@@ -379,7 +378,7 @@ function BookingPage() {
               <div className="mt-5">
                 {selectedDate && selectedService ? (
                   <>
-                    <p className="mb-3 text-sm font-medium capitalize">
+                    <p className="mb-3 text-sm font-semibold first-letter:uppercase">
                       {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                     </p>
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -390,12 +389,12 @@ function BookingPage() {
                             key={slot}
                             type="button"
                             onClick={() => isAvailable && setValue("appointment_time", slot)}
-                            className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
+                            className={`h-12 rounded-md text-base font-semibold tabular-nums transition-colors ${
                               appointmentTime === slot
-                                ? "border-primary bg-primary text-primary-foreground"
+                                ? "bg-primary text-primary-foreground"
                                 : isAvailable
-                                  ? "border-border bg-background hover:border-primary/50 hover:bg-accent"
-                                  : "cursor-not-allowed border-border bg-muted text-muted-foreground line-through opacity-50"
+                                  ? "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                                  : "cursor-not-allowed bg-muted text-muted-foreground/60 line-through"
                             }`}
                             disabled={!isAvailable}
                             aria-pressed={appointmentTime === slot}
@@ -413,7 +412,7 @@ function BookingPage() {
                     )}
                   </>
                 ) : (
-                  <p className="rounded-2xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+                  <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
                     Escolha um serviço e um dia para ver os horários livres.
                   </p>
                 )}
@@ -485,7 +484,7 @@ function BookingPage() {
         </form>
 
         {!confirmed && (
-          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 p-3 backdrop-blur">
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-3 backdrop-blur">
             <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
               <p className="min-w-0 truncate text-sm" aria-live="polite">
                 {summaryLine || "Escolha serviço, dia e horário"}
@@ -498,7 +497,7 @@ function BookingPage() {
               <Button
                 type="submit"
                 form={formId}
-                className="shrink-0 rounded-full px-5"
+                className="shrink-0 px-5"
                 disabled={isSubmitting || mutation.isPending || !canSubmit}
               >
                 {mutation.isPending ? "Confirmando..." : "Confirmar agendamento"}
@@ -513,12 +512,12 @@ function BookingPage() {
           <div
             ref={confirmationRef}
             id="confirmation-card"
-            className="rounded-3xl border border-primary/30 bg-card p-8 text-center shadow-soft-lg md:p-12"
+            className="border-y border-foreground py-10 text-center md:py-14"
           >
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Check className="h-7 w-7" aria-hidden />
             </span>
-            <h2 className="mt-4 font-serif text-2xl font-semibold">Agendamento confirmado!</h2>
+            <h2 className="mt-4 font-serif text-[34px] leading-[1.15]">Agendamento confirmado!</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               {confirmed.clientName}, seu horário de {confirmed.serviceName} ficou para{" "}
               {confirmed.dateLabel} às {confirmed.time}.
@@ -526,7 +525,6 @@ function BookingPage() {
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               {whatsappUrl && (
                 <Button
-                  className="rounded-full"
                   onClick={() => {
                     const win = window.open(whatsappUrl, "_blank");
                     if (!win) {
@@ -543,11 +541,7 @@ function BookingPage() {
                   Enviar confirmação pelo WhatsApp
                 </Button>
               )}
-              <Button
-                variant="outline"
-                className="rounded-full"
-                onClick={() => downloadIcs(confirmed)}
-              >
+              <Button variant="outline" onClick={() => downloadIcs(confirmed)}>
                 Adicionar ao calendário
               </Button>
             </div>

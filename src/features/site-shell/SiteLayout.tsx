@@ -9,13 +9,13 @@ import { Header } from "./Header";
 /** Barra fixa no celular: o caminho mais curto para agendar ou chamar no WhatsApp. */
 function MobileActionBar() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-border/60 bg-background/95 p-3 backdrop-blur md:hidden">
-      <Button asChild size="lg" className="flex-1 rounded-full">
+    <div className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-border bg-background/97 p-3 backdrop-blur md:hidden">
+      <Button asChild size="lg" className="flex-1">
         <Link to="/agendar">
           <CalendarCheck className="h-4 w-4" aria-hidden /> Agendar
         </Link>
       </Button>
-      <Button asChild size="lg" variant="outline" className="rounded-full">
+      <Button asChild size="lg" variant="outline">
         <a
           href={`https://wa.me/${whatsappDigits()}`}
           target="_blank"

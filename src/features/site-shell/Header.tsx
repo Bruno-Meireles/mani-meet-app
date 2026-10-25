@@ -11,20 +11,16 @@ const navItems = [
 ] as const;
 
 const linkClass =
-  "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
+  "text-[15px] font-medium text-muted-foreground transition-colors hover:text-foreground";
 
 function Brand() {
   return (
-    <Link to="/" className="flex items-center gap-3" aria-label={`${siteConfig.name} — início`}>
-      <span
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-serif text-lg font-semibold text-primary-foreground shadow-soft"
-        aria-hidden
-      >
-        {siteConfig.name.charAt(0)}
-      </span>
-      <span className="font-serif text-xl font-semibold tracking-tight text-foreground">
-        {siteConfig.name}
-      </span>
+    <Link
+      to="/"
+      className="font-serif text-[26px] leading-none text-foreground md:text-[32px]"
+      aria-label={`${siteConfig.name} — início`}
+    >
+      {siteConfig.name}
     </Link>
   );
 }
@@ -33,11 +29,11 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/85 backdrop-blur-lg">
-      <div className="mx-auto flex h-18 max-w-6xl items-center justify-between px-5 py-3 md:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 px-5 backdrop-blur-md md:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between md:h-[84px]">
         <Brand />
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Principal">
+        <nav className="hidden items-center gap-10 md:flex" aria-label="Principal">
           {navItems.map((item) => (
             <Link
               key={item.to}
@@ -49,13 +45,13 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <Button asChild size="sm" className="rounded-full px-6">
+          <Button asChild className="px-6 md:h-[46px] md:text-[15px]">
             <Link to="/agendar">Agendar horário</Link>
           </Button>
         </nav>
 
         <button
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border/60 md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center md:hidden"
           onClick={() => setOpen(!open)}
           aria-label={open ? "Fechar menu" : "Abrir menu"}
           aria-expanded={open}
@@ -66,7 +62,7 @@ export function Header() {
 
       {open && (
         <nav
-          className="border-t border-border/50 bg-background px-5 py-5 md:hidden"
+          className="border-t border-border bg-background px-5 py-3 md:hidden"
           aria-label="Menu móvel"
         >
           <div className="flex flex-col gap-4">
@@ -80,7 +76,7 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
-            <Button asChild className="w-full rounded-full" size="lg">
+            <Button asChild className="w-full" size="lg">
               <Link to="/agendar" onClick={() => setOpen(false)}>
                 Agendar horário
               </Link>
